@@ -39,7 +39,7 @@
             </MenuBar>
             <SplitPane dividerPositions="0.5" prefHeight="690.0" prefWidth="1280.0">
                <items>
-                  <TextArea fx:id="JavaTextArea" prefHeight="200.0" prefWidth="200.0" />
+                  <TextArea fx:id="JavaTextArea" prefHeight="200.0" prefWidth="200.0" text="class C{&#10;&#9;public static void main(String s, int a, char c){&#10;&#9;&#9;&#10;&#9;}&#10;}"/>
                   <TextArea fx:id="PythonTextArea" prefHeight="200.0" prefWidth="200.0" />
                </items>
             </SplitPane>

@@ -8,9 +8,9 @@ scalaVersion := "2.13.6"
 scalacOptions ++= Seq("-unchecked", "-deprecation", "-Xcheckinit", "-encoding", "utf8", "-Ymacro-annotations")
 
 // libraries
-val scalaFX = "org.scalafx" %% "scalafx" % "16.0.0-R22"
+val scalaFX =   "org.scalafx" %% "scalafx" % "16.0.0-R22"
 val scalaFXMl = "org.scalafx" %% "scalafxml-core-sfx8" % "0.5"
-val antlr = "org.antlr" % "antlr4-runtime" % "4.7.2"
+val antlr =     "org.antlr" % "antlr4-runtime" % "4.7.2"
 
 
 resourceDirectory in Compile := (scalaSource in Compile).value
