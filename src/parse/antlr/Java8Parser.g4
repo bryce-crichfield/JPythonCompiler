@@ -322,6 +322,7 @@ classBodyDeclaration
 	|	constructorDeclaration
 	;
 
+//important after this
 classMemberDeclaration
 	:	fieldDeclaration
 	|	methodDeclaration

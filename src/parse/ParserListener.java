@@ -268,7 +268,7 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterPackageName(Java8Parser.PackageNameContext ctx) {
-
+        String out = ctx.
     }
 
     @Override
@@ -309,7 +309,8 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterMethodName(Java8Parser.MethodNameContext ctx) {
-
+        String out = ctx.Identifier().getText();
+        System.out.print(out);
     }
 
     @Override
@@ -1441,7 +1442,8 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterAssertStatement(Java8Parser.AssertStatementContext ctx) {
-
+        String out = "assert";
+        TranslationUnit.outputWithTab(out);
     }
 
     @Override

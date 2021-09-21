@@ -1,28 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<module external.linked.project.id="crosscompiler [file:/home/bryce/IdeaProjects/CrossCompiler/]" external.linked.project.path="$MODULE_DIR$/../.." external.root.project.path="$MODULE_DIR$/../.." external.system.id="SBT" type="JAVA_MODULE" version="4">
-  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_11">
+<module external.linked.project.id="crosscompiler [file:/C:/Users/eliza/IdeaProjects/CrossCompiler/]" external.linked.project.path="$MODULE_DIR$/../.." external.root.project.path="$MODULE_DIR$/../.." external.system.id="SBT" type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_16">
     <output url="file://$MODULE_DIR$/../../target/scala-2.13/classes" />
     <output-test url="file://$MODULE_DIR$/../../target/scala-2.13/test-classes" />
     <exclude-output />
     <content url="file://$MODULE_DIR$/../..">
-      <sourceFolder url="file://$MODULE_DIR$/../../resources" type="java-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/../../src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/../../target" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="sbt: org.antlr:antlr4-runtime:4.7.2:jar" level="project" />
     <orderEntry type="library" name="sbt: org.openjfx:javafx-base:16:jar" level="project" />
-    <orderEntry type="library" name="sbt: org.openjfx:javafx-base:16:linux:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.openjfx:javafx-base:16:win:jar" level="project" />
     <orderEntry type="library" name="sbt: org.openjfx:javafx-controls:16:jar" level="project" />
-    <orderEntry type="library" name="sbt: org.openjfx:javafx-controls:16:linux:jar" level="project" />
-    <orderEntry type="library" name="sbt: org.openjfx:javafx-fxml:16:linux:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.openjfx:javafx-controls:16:win:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.openjfx:javafx-fxml:16:win:jar" level="project" />
     <orderEntry type="library" name="sbt: org.openjfx:javafx-graphics:16:jar" level="project" />
-    <orderEntry type="library" name="sbt: org.openjfx:javafx-graphics:16:linux:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.openjfx:javafx-graphics:16:win:jar" level="project" />
     <orderEntry type="library" name="sbt: org.openjfx:javafx-media:16:jar" level="project" />
-    <orderEntry type="library" name="sbt: org.openjfx:javafx-media:16:linux:jar" level="project" />
-    <orderEntry type="library" name="sbt: org.openjfx:javafx-swing:16:linux:jar" level="project" />
-    <orderEntry type="library" name="sbt: org.openjfx:javafx-web:16:linux:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.openjfx:javafx-media:16:win:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.openjfx:javafx-swing:16:win:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.openjfx:javafx-web:16:win:jar" level="project" />
     <orderEntry type="library" name="sbt: org.scala-lang:scala-library:2.13.6:jar" level="project" />
     <orderEntry type="library" name="sbt: org.scala-lang:scala-reflect:2.13.6:jar" level="project" />
     <orderEntry type="library" name="sbt: org.scalafx:scalafx_2.13:16.0.0-R22:jar" level="project" />
@@ -35,11 +33,17 @@
           <root url="jar://$USER_HOME$/.cache/coursier/v1/https/repo1.maven.org/maven2/org/openjfx/javafx-fxml/16/javafx-fxml-16-javadoc.jar!/" />
           <root url="jar://$USER_HOME$/.cache/coursier/v1/https/repo1.maven.org/maven2/org/openjfx/javafx-swing/16/javafx-swing-16-javadoc.jar!/" />
           <root url="jar://$USER_HOME$/.cache/coursier/v1/https/repo1.maven.org/maven2/org/openjfx/javafx-web/16/javafx-web-16-javadoc.jar!/" />
+          <root url="jar://$USER_HOME$/AppData/Local/Coursier/cache/v1/https/repo1.maven.org/maven2/org/openjfx/javafx-fxml/16/javafx-fxml-16-javadoc.jar!/" />
+          <root url="jar://$USER_HOME$/AppData/Local/Coursier/cache/v1/https/repo1.maven.org/maven2/org/openjfx/javafx-swing/16/javafx-swing-16-javadoc.jar!/" />
+          <root url="jar://$USER_HOME$/AppData/Local/Coursier/cache/v1/https/repo1.maven.org/maven2/org/openjfx/javafx-web/16/javafx-web-16-javadoc.jar!/" />
         </JAVADOC>
         <SOURCES>
           <root url="jar://$USER_HOME$/.cache/coursier/v1/https/repo1.maven.org/maven2/org/openjfx/javafx-fxml/16/javafx-fxml-16-sources.jar!/" />
           <root url="jar://$USER_HOME$/.cache/coursier/v1/https/repo1.maven.org/maven2/org/openjfx/javafx-swing/16/javafx-swing-16-sources.jar!/" />
           <root url="jar://$USER_HOME$/.cache/coursier/v1/https/repo1.maven.org/maven2/org/openjfx/javafx-web/16/javafx-web-16-sources.jar!/" />
+          <root url="jar://$USER_HOME$/AppData/Local/Coursier/cache/v1/https/repo1.maven.org/maven2/org/openjfx/javafx-fxml/16/javafx-fxml-16-sources.jar!/" />
+          <root url="jar://$USER_HOME$/AppData/Local/Coursier/cache/v1/https/repo1.maven.org/maven2/org/openjfx/javafx-swing/16/javafx-swing-16-sources.jar!/" />
+          <root url="jar://$USER_HOME$/AppData/Local/Coursier/cache/v1/https/repo1.maven.org/maven2/org/openjfx/javafx-web/16/javafx-web-16-sources.jar!/" />
         </SOURCES>
       </library>
     </orderEntry>
