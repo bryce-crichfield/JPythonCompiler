@@ -271,7 +271,7 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterPackageName(Java8Parser.PackageNameContext ctx) {
-        String out = ctx.
+
     }
 
     @Override
@@ -312,7 +312,7 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterMethodName(Java8Parser.MethodNameContext ctx) {
-        String out = ctx.Identifier().getText();
+        String out = ctx.Identifier().getText(); //EW
         System.out.print(out);
     }
 
@@ -719,7 +719,7 @@ public class ParserListener implements Java8ParserListener {
         TranslationUnit.outputWithTab(out);
     }
 
-    // methodDeclartion
+    // methodDeclaration
     //
 
     @Override
@@ -1341,7 +1341,7 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterStatement(Java8Parser.StatementContext ctx) {
-
+    //don't really need this if we aren't importing anything because you would need a scanner
     }
 
     @Override
@@ -1432,6 +1432,10 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterIfThenElseStatement(Java8Parser.IfThenElseStatementContext ctx) {
+        //String out = "if(" + "):\n" + "\nelse:";
+        //TranslationUnit.outputWithTab(out);
+        //this doesn't really work, the expression in the if statement prints outside
+        // of the parentheses and after the "else:".
 
     }
 
@@ -1453,7 +1457,7 @@ public class ParserListener implements Java8ParserListener {
     @Override
     public void enterAssertStatement(Java8Parser.AssertStatementContext ctx) {
         String out = "assert";
-        TranslationUnit.outputWithTab(out);
+        TranslationUnit.outputNoTab(out);
     }
 
     @Override
