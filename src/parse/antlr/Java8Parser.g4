@@ -1237,38 +1237,38 @@ assignmentOperator
 
 conditionalExpression
 	:	conditionalOrExpression
-	|	conditionalOrExpression '?' expression ':' conditionalExpression    //ternary ignore for now
+	|	conditionalOrExpression '?' expression ':' conditionalExpression    //R
 	;
 
 conditionalOrExpression
 	:	conditionalAndExpression
-	|	conditionalOrExpression '||' conditionalAndExpression
+	|	conditionalOrExpression '||' conditionalAndExpression   //R
 	;
 
 conditionalAndExpression
 	:	inclusiveOrExpression
-	|	conditionalAndExpression '&&' inclusiveOrExpression
+	|	conditionalAndExpression '&&' inclusiveOrExpression //R
 	;
 
 inclusiveOrExpression
 	:	exclusiveOrExpression
-	|	inclusiveOrExpression '|' exclusiveOrExpression
+	|	inclusiveOrExpression '|' exclusiveOrExpression //R
 	;
 
 exclusiveOrExpression
 	:	andExpression
-	|	exclusiveOrExpression '^' andExpression
+	|	exclusiveOrExpression '^' andExpression //R
 	;
 
 andExpression
 	:	equalityExpression
-	|	andExpression '&' equalityExpression
+	|	andExpression '&' equalityExpression    //R
 	;
 
 equalityExpression
 	:	relationalExpression
-	|	equalityExpression '==' relationalExpression
-	|	equalityExpression '!=' relationalExpression
+	|	equalityExpression '==' relationalExpression    //R
+	|	equalityExpression '!=' relationalExpression    //R
 	;
 
 relationalExpression

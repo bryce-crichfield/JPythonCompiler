@@ -1,7 +1,7 @@
 package core.state
 import global.ResourcePaths.MainScene
 import gui.UIUtilities._
-import io.CodeFile
+import io.{CodeFile, IO}
 import org.antlr.v4.runtime.tree.ParseTreeWalker
 import org.antlr.v4.runtime.{CharStreams, CommonTokenStream}
 import parse.antlr.{Java8Lexer, Java8Parser}
@@ -16,7 +16,5 @@ case class MainState(rawInput: CodeFile = CodeFile(None, None),
   def setRawInput(input: CodeFile): MainState = this.copy(rawInput = input)
   def setRawOutput(output: CodeFile): MainState = this.copy(rawOutput = output)
   override val stage: PrimaryStage = createStage(MainScene)(primaryStageBuilder)
-
-
-
 }
+
