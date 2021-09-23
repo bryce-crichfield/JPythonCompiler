@@ -1341,7 +1341,7 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterStatement(Java8Parser.StatementContext ctx) {
-    //don't really need this if we aren't importing anything because you would need a scanner
+
     }
 
     @Override
@@ -1434,8 +1434,7 @@ public class ParserListener implements Java8ParserListener {
     public void enterIfThenElseStatement(Java8Parser.IfThenElseStatementContext ctx) {
         //String out = "if(" + "):\n" + "\nelse:";
         //TranslationUnit.outputWithTab(out);
-        //this doesn't really work, the expression in the if statement prints outside
-        // of the parentheses and after the "else:".
+        //this doesn't really work, the expression in the if statement prints outside of the parenthesis.
 
     }
 
@@ -1647,7 +1646,8 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterBreakStatement(Java8Parser.BreakStatementContext ctx) {
-
+        String out = "break" + ctx.Identifier();
+        TranslationUnit.outputNoTab(out);
     }
 
     @Override
@@ -1657,7 +1657,8 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterContinueStatement(Java8Parser.ContinueStatementContext ctx) {
-
+        String out = "continue" + ctx.Identifier();
+        TranslationUnit.outputNoTab(out);
     }
 
     @Override
