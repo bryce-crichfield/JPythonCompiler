@@ -1,11 +1,15 @@
 package parse;
 
+
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import parse.antlr.Java8Parser;
 import parse.antlr.Java8ParserListener;
+import parse.antlr.Java8Parser.FloatingPointTypeContext;
+import parse.antlr.Java8Parser.IntegralTypeContext;
+import parse.antlr.Java8Parser.NumericTypeContext;
 
 public class ParserListener implements Java8ParserListener {
 
@@ -50,7 +54,7 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterNumericType(Java8Parser.NumericTypeContext ctx) {
-
+  
     }
 
     @Override
@@ -60,6 +64,13 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterIntegralType(Java8Parser.IntegralTypeContext ctx) {
+        String out = ctx.getText();
+        if(out.equals("byte")) {out = "Byte";}
+        else if(out.equals("short")) {out = "Short";}
+        else if(out.equals("int")) {out = "Int";}
+        else if(out.equals("long")) {out = "Long";}
+        else if(out.equals("char")) {out = "Char";}
+        TranslationUnit.outputNoTab(out);
 
     }
 
@@ -70,7 +81,10 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterFloatingPointType(Java8Parser.FloatingPointTypeContext ctx) {
-
+        String out = ctx.getText();
+        if(out.equals("float")) {out = "Float";}
+        else if(out.equals("double")) {out = "Double";}
+        TranslationUnit.outputNoTab(out);
     }
 
     @Override
@@ -435,7 +449,6 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void exitClassDeclaration(Java8Parser.ClassDeclarationContext ctx) {
-
     }
 
     @Override
