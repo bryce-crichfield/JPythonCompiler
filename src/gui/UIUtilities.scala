@@ -1,7 +1,7 @@
 package gui
 
 import core.App
-import global.ResourcePaths.FX_Layouts
+import io.ResourcePaths.FX_Layouts
 import io.IO.FileError
 import io.{CodeFile, IO}
 import javafx.scene.control.{ButtonType, Dialog}
@@ -19,7 +19,7 @@ object UIUtilities {
 
 
   def constructFXMLPath(title: String): String = {
-    s"${FX_Layouts}/${title}.fxml"
+    s"/${title}.fxml"
   }
 
   // Given a title of an FXMl, will attempt to load the FXML as a URL

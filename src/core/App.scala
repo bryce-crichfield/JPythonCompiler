@@ -1,12 +1,12 @@
 package core
 
-import core.state.{MainState, StartState, StateManager}
+import core.StateManager
 import scalafx.application.JFXApp
 import scalafx.application.JFXApp.PrimaryStage
 
 object App extends JFXApp {
 
-  StateManager.transition(MainState())
+  StateManager.transition(State())
 
   def setStage(stage: PrimaryStage): Unit = {
     this.stage = stage

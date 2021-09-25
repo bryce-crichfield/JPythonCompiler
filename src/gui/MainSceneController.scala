@@ -1,11 +1,9 @@
-package gui.controller
+package gui
 
-import core.App
-import core.state.{StartState, StateManager}
+import core.{App, StateManager}
 import gui.UIUtilities.{openFileChooser, openOperation, saveFileChooser}
 import io.{CodeFile, IO}
 import javafx.application.Platform
-import javafx.beans.value.ObservableValue
 import javafx.scene.control.{MenuItem, TextArea}
 import scalafxml.core.macros.sfxml
 
@@ -23,13 +21,6 @@ class MainSceneController(JavaTextArea: TextArea, PythonTextArea: TextArea, save
     setFormattedText(PythonTextArea, StateManager.getPythonCode())
     setSaveMenuItemStatus()
     setTitle()
-  }
-
-  // saves the current java code, resets the code, and transitions back
-  def backOnClick(): Unit = {
-    saveOnClick()
-    StateManager.setJavaCode(CodeFile(None, None))
-    StateManager.transition(StartState())
   }
 
   def saveOnClick(): Unit = {
