@@ -752,7 +752,7 @@ public class ParserListener implements Java8ParserListener {
     public void exitMethodDeclaration(Java8Parser.MethodDeclarationContext ctx) {
         String out = "\n";
         if(ctx.methodHeader().methodDeclarator().Identifier().getText().equals("main")) {
-            out += "\tmain()\n";
+            out += "\tmain([])\n";
         }
         TranslationUnit.outputNoTab(out);
     }
@@ -810,9 +810,9 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterFormalParameters(Java8Parser.FormalParametersContext ctx) {
-        String out = ", ";
+        String out = "";
         for(int i = 0; i < ctx.formalParameter().size(); i++) {
-            out += ctx.formalParameter(i).variableDeclaratorId().Identifier().getText() + ", ";
+            out += ", " + ctx.formalParameter(i).variableDeclaratorId().Identifier().getText();
         }
         TranslationUnit.outputNoTab(out);
     }
@@ -844,7 +844,7 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterLastFormalParameter(Java8Parser.LastFormalParameterContext ctx) {
-        String out = ctx.formalParameter().variableDeclaratorId().Identifier().getText();
+        String out = ", " + ctx.formalParameter().variableDeclaratorId().Identifier().getText();
         TranslationUnit.outputNoTab(out);
     }
 
