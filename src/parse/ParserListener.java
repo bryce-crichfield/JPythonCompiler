@@ -1317,6 +1317,10 @@ public class ParserListener implements Java8ParserListener {
     public void enterBlock(Java8Parser.BlockContext ctx) {
         // causes scope increase
         TranslationUnit.enterScope();
+
+        if(ctx.blockStatements() == null) {
+            TranslationUnit.outputWithTab("pass\n");
+        }
     }
 
     @Override
@@ -2314,28 +2318,26 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterEqualityExpression(Java8Parser.EqualityExpressionContext ctx) {
-        //Can work differently than the Conditional expressions because Equality expressions can't be chained together
-        if(ctx.parent.getChildCount() > 1){
-            TranslationUnit.outputNoTab(ctx.parent.getChild(1).getText());
-        }
+
     }
 
     @Override
     public void exitEqualityExpression(Java8Parser.EqualityExpressionContext ctx) {
-
-    }
-
-    @Override
-    public void enterRelationalExpression(Java8Parser.RelationalExpressionContext ctx) {
-        //Can work differently than the Conditional expressions because Relational expressions can't be chained together
-        if(ctx.parent.getChildCount() > 1){
-            TranslationUnit.outputNoTab(ctx.parent.getChild(1).getText());
+        if(ctx.parent instanceof Java8Parser.EqualityExpressionContext){//ctx.parent.getChildCount() > 1){
+            TranslationUnit.outputNoTab(ctx.parent.getChild(1).getText() + " ");
         }
     }
 
     @Override
-    public void exitRelationalExpression(Java8Parser.RelationalExpressionContext ctx) {
+    public void enterRelationalExpression(Java8Parser.RelationalExpressionContext ctx) {
 
+    }
+
+    @Override
+    public void exitRelationalExpression(Java8Parser.RelationalExpressionContext ctx) {
+        if(ctx.parent instanceof Java8Parser.RelationalExpressionContext){//ctx.parent.getChildCount() > 1){
+            TranslationUnit.outputNoTab(ctx.parent.getChild(1).getText() + " ");
+        }
     }
 
     @Override
@@ -2354,7 +2356,9 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void exitAdditiveExpression(Java8Parser.AdditiveExpressionContext ctx) {
-
+        if(ctx.parent instanceof Java8Parser.AdditiveExpressionContext){//ctx.parent.getChildCount() > 1){
+            TranslationUnit.outputNoTab(ctx.parent.getChild(1).getText() + " ");
+        }
     }
 
         @Override
@@ -2364,11 +2368,14 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void exitMultiplicativeExpression(Java8Parser.MultiplicativeExpressionContext ctx) {
-
+        if(ctx.parent instanceof Java8Parser.MultiplicativeExpressionContext){//ctx.parent.getChildCount() > 1){
+            TranslationUnit.outputNoTab(ctx.parent.getChild(1).getText() + " ");
+        }
     }
 
     @Override
     public void enterUnaryExpression(Java8Parser.UnaryExpressionContext ctx) {
+        //Can be revised like other expression operators? -TQ
         String out;
         if(ctx.unaryExpression() != null) {
             if(ctx.getChild(0).getText().equals("-")){
