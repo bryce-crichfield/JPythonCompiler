@@ -9,6 +9,7 @@ object StateManager {
 
   def state(): State = currentState
 
+
   def transition(state: State): Unit = {
     currentState = state
     App.setStage(state.stage)
@@ -47,11 +48,11 @@ object StateManager {
     }
   }
 
-  def translate(input: String): Unit = {
+  def translate(input: String, run: Boolean): Unit = {
     currentState match {
       case s: State =>
-        TranslationUnit.walk(input)
-        val output = TranslationUnit.print()
+        if(run) TranslationUnit.walk(input)
+        val output = TranslationUnit.show()
         val rawInput = s.rawInput.setRaw(input)
         val rawOutput = s.rawOutput.setRaw(output)
         val s2 = State(rawInput, rawOutput)

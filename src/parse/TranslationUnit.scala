@@ -15,9 +15,9 @@ import java.nio.charset.StandardCharsets
 object TranslationUnit {
 
   private var currentScope: Int = 0
-  private var internalBuilder: StringBuilder = new StringBuilder()
+  private val internalBuilder: StringBuilder = new StringBuilder()
 
-  def print(): String = internalBuilder.mkString
+  def show(): String = internalBuilder.mkString
 
   private def stringToCharStream(str: String): CharStream = {
     val stream = new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8))
@@ -27,6 +27,7 @@ object TranslationUnit {
   // this is probably inefficient, will be forced to rebuild AST each time,
   // works for now via a translate button, but will need to be more resilient once real-time updates are implemented
   def walk(input: String): Unit = {
+    internalBuilder.clear()
     val lexer = new Java8Lexer(stringToCharStream(input))
     val tokens = new CommonTokenStream(lexer)
     val parser = new Java8Parser(tokens)
@@ -36,7 +37,6 @@ object TranslationUnit {
     walker.walk(listener, tree)
   }
 
-  // broke
   def enterScope(): Unit = currentScope += 1
   def exitScope(): Unit = currentScope -= 1
   def tabs(): String = List.fill(currentScope)("\t").mkString
