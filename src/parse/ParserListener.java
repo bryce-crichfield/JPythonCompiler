@@ -2222,7 +2222,7 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterAssignment(Java8Parser.AssignmentContext ctx) {
-
+        TranslationUnit.outputWithTab("");
     }
 
     @Override
