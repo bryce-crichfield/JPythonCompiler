@@ -3,11 +3,10 @@ package parse;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
-import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
-import parse.antlr.Java8Lexer;
 import parse.antlr.Java8Parser;
 import parse.antlr.Java8ParserListener;
+import java.util.List;
 
 public class ParserListener implements Java8ParserListener {
 
@@ -31,11 +30,13 @@ public class ParserListener implements Java8ParserListener {
     @Override
     public void enterLiteral(Java8Parser.LiteralContext ctx) {
         String out = ctx.getText();
+
         if(out.equals("true")) {out = "True";}
         else if(out.equals("false")) {out = "False";}
         if((ctx.IntegerLiteral() != null || ctx.FloatingPointLiteral() != null) && ctx.getText().charAt(ctx.getText().length() - 1) > 57) {
             out = out.substring(0, ctx.getText().length() - 1);
         }
+
         TranslationUnit.outputNoTab(out);
     }
 
@@ -66,15 +67,7 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterIntegralType(Java8Parser.IntegralTypeContext ctx) {
-        /*
-        String out = ctx.getText();
-        if(out.equals("byte")) {out = "Byte";}
-        else if(out.equals("short")) {out = "Short";}
-        else if(out.equals("int")) {out = "Int";}
-        else if(out.equals("long")) {out = "Long";}
-        else if(out.equals("char")) {out = "Char";}
-        TranslationUnit.outputNoTab(out);
-         */
+
     }
 
     @Override
@@ -84,12 +77,7 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterFloatingPointType(Java8Parser.FloatingPointTypeContext ctx) {
-        /*
-        String out = ctx.getText();
-        if(out.equals("float")) {out = "Float";}
-        else if(out.equals("double")) {out = "Double";}
-        TranslationUnit.outputNoTab(out);
-         */
+
     }
 
     @Override
@@ -464,7 +452,21 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void exitNormalClassDeclaration(Java8Parser.NormalClassDeclarationContext ctx) {
+        String out = "";
 
+        List<Java8Parser.ClassBodyDeclarationContext> classMembers = ctx.classBody().classBodyDeclaration();
+        for(int i = classMembers.size() - 1; i >= 0; i--){
+        //I think conventionally, Java main method is at bottom, like C/C++
+            if(classMembers.get(i).classMemberDeclaration() != null){
+                if(classMembers.get(i).classMemberDeclaration().methodDeclaration() != null){
+                    if(classMembers.get(i).classMemberDeclaration().methodDeclaration().methodHeader().methodDeclarator().Identifier().getText().equals("main")){
+                        out = "Main = " + ctx.Identifier() + "()\nMain.main([])";
+                    }
+                }
+            }
+        }
+
+        TranslationUnit.outputWithTab(out);
     }
 
     @Override
@@ -751,9 +753,11 @@ public class ParserListener implements Java8ParserListener {
     @Override
     public void exitMethodDeclaration(Java8Parser.MethodDeclarationContext ctx) {
         String out = "\n";
+        /*
         if(ctx.methodHeader().methodDeclarator().Identifier().getText().equals("main")) {
             out += "\tmain([])\n";
         }
+        */
         TranslationUnit.outputNoTab(out);
     }
 
@@ -1372,8 +1376,7 @@ public class ParserListener implements Java8ParserListener {
     @Override
     public void enterStatement(Java8Parser.StatementContext ctx) {
         //System.out.println("enterStatement");
-
-        String out = "";
+        String out;
         if(ctx.parent instanceof Java8Parser.IfThenElseStatementContext) {
             if(ctx.getChild(0) instanceof Java8Parser.IfThenElseStatementContext || ctx.getChild(0) instanceof Java8Parser.IfThenStatementContext || ctx.getChild(0) instanceof Java8Parser.IfThenElseStatementNoShortIfContext) {
                 out = "el";
@@ -2214,22 +2217,17 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void exitAssignmentExpression(Java8Parser.AssignmentExpressionContext ctx) {
-        //TranslationUnit.outputNoTab("\n");
+
     }
 
     @Override
     public void enterAssignment(Java8Parser.AssignmentContext ctx) {
-        /*
-        String leftHandSide = ctx.leftHandSide().expressionName().Identifier().getText();
-        String assignOperator = ctx.assignmentOperator().getText();
-        String out = leftHandSide + " " + assignOperator + " ";
-        */
-        TranslationUnit.outputWithTab("");
+
     }
 
     @Override
     public void exitAssignment(Java8Parser.AssignmentContext ctx) {
-
+        TranslationUnit.outputNoTab("\n");
     }
 
     @Override
