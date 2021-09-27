@@ -56,6 +56,11 @@ parser grammar Java8Parser;
 options {
     tokenVocab=Java8Lexer;
 }
+comment //TQ
+    :   LINE_COMMENT
+    |   COMMENT
+    ;
+
 /*
  * Productions from §3 (Lexical Structure)
  */
@@ -1198,7 +1203,7 @@ lambdaBody
 	;
 
 assignmentExpression
-	:	conditionalExpression   // "boolean expression"
+	:	conditionalExpression   // math expression
 	|	assignment
 	;
 

@@ -1,11 +1,9 @@
-package gui.controller
+package gui
 
-import core.App
-import core.state.{StartState, StateManager}
+import core.{App, StateManager}
 import gui.UIUtilities.{openFileChooser, openOperation, saveFileChooser}
 import io.{CodeFile, IO}
 import javafx.application.Platform
-import javafx.beans.value.ObservableValue
 import javafx.scene.control.{MenuItem, TextArea}
 import scalafxml.core.macros.sfxml
 
@@ -16,20 +14,9 @@ class MainSceneController(JavaTextArea: TextArea, PythonTextArea: TextArea, save
 
   //Is called each time any button is clicked
   def initialize(): Unit = {
-    PythonTextArea.setEditable(false)
-    JavaTextArea.setStyle("-fx-font-family: monospace")
-    PythonTextArea.setStyle("-fx-font-family: monospace")
-    setFormattedText(JavaTextArea, StateManager.getJavaCode())
-    setFormattedText(PythonTextArea, StateManager.getPythonCode())
     setSaveMenuItemStatus()
     setTitle()
-  }
-
-  // saves the current java code, resets the code, and transitions back
-  def backOnClick(): Unit = {
-    saveOnClick()
-    StateManager.setJavaCode(CodeFile(None, None))
-    StateManager.transition(StartState())
+    forceBinding()
   }
 
   def saveOnClick(): Unit = {
@@ -88,18 +75,24 @@ class MainSceneController(JavaTextArea: TextArea, PythonTextArea: TextArea, save
   }
 
   def translateOnClick(): Unit = {
-    StateManager.translate(JavaTextArea.getText)
-    setFormattedText(JavaTextArea, StateManager.getJavaCode())
-    setFormattedText(PythonTextArea, StateManager.getPythonCode())
-    forceBinding()
+    //idk why it needs to be ran twice???
+    runLater {
+      StateManager.translate(JavaTextArea.getText, true)
+      StateManager.translate(JavaTextArea.getText, false)
+    }
   }
 
   private def forceBinding(): Unit = {
+    setFormattedText(JavaTextArea, StateManager.getJavaCode())
+    setFormattedText(PythonTextArea, StateManager.getPythonCode())
     JavaTextArea.setText(JavaTextArea.getText)
     PythonTextArea.setText(PythonTextArea.getText)
-    StateManager.setJavaCode(StateManager.getJavaCode())
-    StateManager.setPythonCode(StateManager.getPythonCode())
   }
 
+  def runLater(f: => Unit) : Unit = {
+    Platform.runLater(new Runnable {
+      override def run(): Unit = f
+    })
+  }
 
 }

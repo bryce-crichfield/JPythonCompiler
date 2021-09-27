@@ -16,6 +16,19 @@ public class Java8ParserBaseListener implements Java8ParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterComment(Java8Parser.CommentContext ctx) { } //TQ
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitComment(Java8Parser.CommentContext ctx) { } //TQ
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterLiteral(Java8Parser.LiteralContext ctx) { }
 	/**
 	 * {@inheritDoc}

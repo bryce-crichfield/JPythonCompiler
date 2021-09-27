@@ -31,7 +31,8 @@ public class Java8Parser extends Parser {
 		ADD_ASSIGN=91, SUB_ASSIGN=92, MUL_ASSIGN=93, DIV_ASSIGN=94, AND_ASSIGN=95, 
 		OR_ASSIGN=96, XOR_ASSIGN=97, MOD_ASSIGN=98, LSHIFT_ASSIGN=99, RSHIFT_ASSIGN=100, 
 		URSHIFT_ASSIGN=101, Identifier=102, AT=103, ELLIPSIS=104, WS=105, COMMENT=106, 
-		LINE_COMMENT=107;
+		LINE_COMMENT=107,
+		LineCommentText=108, CommentText=109; //TQ
 	public static final int
 		RULE_literal = 0, RULE_primitiveType = 1, RULE_numericType = 2, RULE_integralType = 3, 
 		RULE_floatingPointType = 4, RULE_referenceType = 5, RULE_classOrInterfaceType = 6, 
@@ -118,7 +119,8 @@ public class Java8Parser extends Parser {
 		RULE_preDecrementExpression = 228, RULE_unaryExpressionNotPlusMinus = 229, 
 		RULE_postfixExpression = 230, RULE_postIncrementExpression = 231, RULE_postIncrementExpression_lf_postfixExpression = 232, 
 		RULE_postDecrementExpression = 233, RULE_postDecrementExpression_lf_postfixExpression = 234, 
-		RULE_castExpression = 235;
+		RULE_castExpression = 235,
+		RULE_comment = 236; //TQ
 	private static String[] makeRuleNames() {
 		return new String[] {
 			"literal", "primitiveType", "numericType", "integralType", "floatingPointType", 
@@ -186,7 +188,8 @@ public class Java8Parser extends Parser {
 			"unaryExpression", "preIncrementExpression", "preDecrementExpression", 
 			"unaryExpressionNotPlusMinus", "postfixExpression", "postIncrementExpression", 
 			"postIncrementExpression_lf_postfixExpression", "postDecrementExpression", 
-			"postDecrementExpression_lf_postfixExpression", "castExpression"
+			"postDecrementExpression_lf_postfixExpression", "castExpression",
+			"comment" //TQ
 		};
 	}
 	public static final String[] ruleNames = makeRuleNames();
@@ -280,6 +283,48 @@ public class Java8Parser extends Parser {
 		super(input);
 		_interp = new ParserATNSimulator(this,_ATN,_decisionToDFA,_sharedContextCache);
 	}
+	public static class CommentContext extends ParserRuleContext { //TQ
+		public TerminalNode LINE_COMMENT() {return getToken(Java8Parser.LINE_COMMENT, 0);}
+		public TerminalNode COMMENT() {return getToken(Java8Parser.COMMENT, 0);}
+		public CommentContext(ParserRuleContext parent, int invokingState) {super(parent, invokingState);}
+		@Override public int getRuleIndex() { return RULE_comment; }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof Java8ParserListener ) ((Java8ParserListener)listener).enterComment(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof Java8ParserListener ) ((Java8ParserListener)listener).exitComment(this);
+		}
+	}
+
+	public final CommentContext comment() throws RecognitionException { //TQ
+		CommentContext _localctx = new CommentContext(_ctx, getState());
+		enterRule(_localctx, 0, RULE_comment);
+		int _la;
+		try{
+			enterOuterAlt(_localctx, 1);
+			{
+				setState(470);
+				_la = _input.LA(1);
+				if ( !(_la==LINE_COMMENT || _la==COMMENT) ) {
+					_errHandler.recoverInline(this);
+				}else {
+					if ( _input.LA(1)==Token.EOF ) matchedEOF = true;
+					_errHandler.reportMatch(this);
+					consume();
+				}
+			}
+		}catch(RecognitionException re) {
+			_localctx.exception = re;
+			_errHandler.reportError(this, re);
+			_errHandler.recover(this, re);
+		}finally {
+			exitRule();
+		}
+		return _localctx;
+	}
+
 	public static class LiteralContext extends ParserRuleContext {
 		public TerminalNode IntegerLiteral() { return getToken(Java8Parser.IntegerLiteral, 0); }
 		public TerminalNode FloatingPointLiteral() { return getToken(Java8Parser.FloatingPointLiteral, 0); }

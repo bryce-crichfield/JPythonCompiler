@@ -8,6 +8,16 @@ import org.antlr.v4.runtime.tree.ParseTreeListener;
  */
 public interface Java8ParserListener extends ParseTreeListener {
 	/**
+	 * Enter a parse tree produced by {@link Java8Parser#comment}.
+	 * @param ctx the parse tree
+	 */
+	void enterComment(Java8Parser.CommentContext ctx); //TQ
+	/**
+	 * Enter a parse tree produced by {@link Java8Parser#comment}.
+	 * @param ctx the parse tree
+	 */
+	void exitComment(Java8Parser.CommentContext ctx); //TQ
+	/**
 	 * Enter a parse tree produced by {@link Java8Parser#literal}.
 	 * @param ctx the parse tree
 	 */
@@ -2367,4 +2377,5 @@ public interface Java8ParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitCastExpression(Java8Parser.CastExpressionContext ctx);
+
 }
