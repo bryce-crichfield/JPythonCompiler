@@ -1,7 +1,9 @@
 package parse;
 
 
+import com.sun.marlin.DTransformingPathConsumer2D;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import parse.antlr.Java8Parser;
@@ -2125,12 +2127,22 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void exitArrayCreationExpression(Java8Parser.ArrayCreationExpressionContext ctx) {
-
     }
 
     @Override
     public void enterDimExprs(Java8Parser.DimExprsContext ctx) {
+        String output = "";
+        if (ctx.parent instanceof Java8Parser.ArrayCreationExpressionContext){
+            if (ctx.parent.getChild(1).getPayload() instanceof Java8Parser.PrimitiveTypeContext) {
+                if (ctx.parent.getChild(1).getText().equals("int")) {
+                    output = "[" + 0 + "] * ";
+                } else output = "[] * ";
+            }
+        }
 
+        TranslationUnit.outputNoTab(output);
+        // currently cannot differentiate between integralType and booleans
+        //RC
     }
 
     @Override
