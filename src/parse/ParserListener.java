@@ -2122,27 +2122,43 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterArrayCreationExpression(Java8Parser.ArrayCreationExpressionContext ctx) {
-
+        String output = "[";
+        switch (ctx.getChild(1).getText())
+        {
+            case "byte":
+            case "short":
+            case "int":
+                output += "0] * ";
+                break;
+            case "boolean":
+                output += "False] * ";
+                break;
+            case "long":
+                output += "0L] * ";
+            case "double":
+            case "float":
+                output += "0.0] * ";
+                break;
+            case "char":
+                output += "''] * ";
+                break;
+            default: output += "[] * ";
+        }
+        TranslationUnit.outputNoTab(output);
     }
+    //Moved the definition from enterDimExprs to here because it was cleaner
+    //added switch statement to detect for all primitive and boolean types and keep with
+    //explicit declaration of type to match Java
+    //RC
 
     @Override
     public void exitArrayCreationExpression(Java8Parser.ArrayCreationExpressionContext ctx) {
+
     }
 
     @Override
     public void enterDimExprs(Java8Parser.DimExprsContext ctx) {
-        String output = "";
-        if (ctx.parent instanceof Java8Parser.ArrayCreationExpressionContext){
-            if (ctx.parent.getChild(1).getPayload() instanceof Java8Parser.PrimitiveTypeContext) {
-                if (ctx.parent.getChild(1).getText().equals("int")) {
-                    output = "[" + 0 + "] * ";
-                } else output = "[] * ";
-            }
-        }
 
-        TranslationUnit.outputNoTab(output);
-        // currently cannot differentiate between integralType and booleans
-        //RC
     }
 
     @Override
