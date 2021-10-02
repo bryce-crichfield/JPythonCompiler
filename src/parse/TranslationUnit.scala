@@ -26,15 +26,18 @@ object TranslationUnit {
 
   // this is probably inefficient, will be forced to rebuild AST each time,
   // works for now via a translate button, but will need to be more resilient once real-time updates are implemented
-  def walk(input: String): Unit = {
+  def walk(input: String): List[SyntaxError] = {
     internalBuilder.clear()
     val lexer = new Java8Lexer(stringToCharStream(input))
     val tokens = new CommonTokenStream(lexer)
     val parser = new Java8Parser(tokens)
+    val errorListener = new ErrorListener
+    parser.addErrorListener(errorListener)
     val tree = parser.compilationUnit()
     val walker = new ParseTreeWalker()
-    val listener = new ParserListener(parser)
-    walker.walk(listener, tree)
+    val parserListener = new ParserListener(parser)
+    walker.walk(parserListener, tree)
+    errorListener.syntaxErrors()
   }
 
   def enterScope(): Unit = currentScope += 1
