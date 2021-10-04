@@ -1,7 +1,9 @@
 package parse;
 
 
+import com.sun.marlin.DTransformingPathConsumer2D;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import parse.antlr.Java8Parser;
@@ -2120,8 +2122,34 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterArrayCreationExpression(Java8Parser.ArrayCreationExpressionContext ctx) {
-
+        String output = "[";
+        switch (ctx.getChild(1).getText())
+        {
+            case "byte":
+            case "short":
+            case "int":
+                output += "0] * ";
+                break;
+            case "boolean":
+                output += "False] * ";
+                break;
+            case "long":
+                output += "0L] * ";
+            case "double":
+            case "float":
+                output += "0.0] * ";
+                break;
+            case "char":
+                output += "''] * ";
+                break;
+            default: output += "[] * ";
+        }
+        TranslationUnit.outputNoTab(output);
     }
+    //Moved the definition from enterDimExprs to here because it was cleaner
+    //added switch statement to detect for all primitive and boolean types and keep with
+    //explicit declaration of type to match Java
+    //RC
 
     @Override
     public void exitArrayCreationExpression(Java8Parser.ArrayCreationExpressionContext ctx) {
