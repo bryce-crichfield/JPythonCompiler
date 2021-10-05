@@ -16,6 +16,13 @@ object TranslationUnit {
 
   private var currentScope: Int = 0
   private val internalBuilder: StringBuilder = new StringBuilder()
+  private[this] var forUpdate: String = _
+
+  def getForUpdate: String = forUpdate
+
+  def setForUpdate(value: String): Unit = {
+    forUpdate = value
+  }
 
   def show(): String = internalBuilder.mkString
 

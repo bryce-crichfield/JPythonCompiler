@@ -321,17 +321,20 @@ public class ParserListener implements Java8ParserListener {
     @Override   // have not included ambig. defn.
     public void enterExpressionName(Java8Parser.ExpressionNameContext ctx) {
         String out = "";
-        out += ctx.Identifier().getText(); // RC removed trailing space here and individually added it to the required expressions to not effect output
-        TranslationUnit.outputNoTab(out);
+        if (!(ctx.parent instanceof Java8Parser.BasicForStatementContext)) {
+            out += ctx.Identifier().getText(); // RC removed trailing space here and individually added it to the required expressions to not effect output
+            TranslationUnit.outputNoTab(out);
+        }
     }
 
     @Override
     public void exitExpressionName(Java8Parser.ExpressionNameContext ctx) {
-
+/*
         if (TranslationUnit.show().contains("[") && !TranslationUnit.show().contains("]")) {
             String out = "]";
             TranslationUnit.outputNoTab(out);
         }
+ */
     }
 
     @Override
@@ -1386,9 +1389,9 @@ public class ParserListener implements Java8ParserListener {
         //System.out.println("enterStatement");
         String out;
         if(ctx.parent instanceof Java8Parser.IfThenElseStatementContext) {
-            if(ctx.getChild(0) instanceof Java8Parser.IfThenElseStatementContext || ctx.getChild(0) instanceof Java8Parser.IfThenStatementContext || ctx.getChild(0) instanceof Java8Parser.IfThenElseStatementNoShortIfContext) {
+            if (ctx.getChild(0) instanceof Java8Parser.IfThenElseStatementContext || ctx.getChild(0) instanceof Java8Parser.IfThenStatementContext || ctx.getChild(0) instanceof Java8Parser.IfThenElseStatementNoShortIfContext) {
                 out = "el";
-            }else {
+            } else {
                 out = "else:\n";
             }
             TranslationUnit.outputWithTab(out);
@@ -1643,7 +1646,8 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void exitBasicForStatement(Java8Parser.BasicForStatementContext ctx) {
-
+        TranslationUnit.outputWithTab(TranslationUnit.getForUpdate());
+        TranslationUnit.setForUpdate("");
     }
 
     @Override
@@ -1668,12 +1672,12 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterForUpdate(Java8Parser.ForUpdateContext ctx) {
-
+        TranslationUnit.setForUpdate(ctx.getText());
     }
 
     @Override
     public void exitForUpdate(Java8Parser.ForUpdateContext ctx) {
-
+        TranslationUnit.outputNoTab("\n");
     }
 
     @Override
@@ -2149,10 +2153,11 @@ public class ParserListener implements Java8ParserListener {
                 break;
             default: output += "[] * ";
         }
+        //RC
         TranslationUnit.outputNoTab(output);
     }
     //Moved the definition from enterDimExprs to here because it was cleaner
-    //added switch statement to detect for all primitive and boolean types and keep with
+    //added switch statement to detect for all primitive and boolean types and keep
     //explicit declaration of type to match Java
     //RC
 
@@ -2198,6 +2203,11 @@ public class ParserListener implements Java8ParserListener {
             out = "[";
             TranslationUnit.outputNoTab(out);
         }
+        else if (ctx.parent instanceof Java8Parser.BasicForStatementContext) {
+            out = "while ";
+            TranslationUnit.outputWithTab(out);
+        }
+
     }
 
     @Override
@@ -2208,7 +2218,12 @@ public class ParserListener implements Java8ParserListener {
         else if (ctx.parent instanceof Java8Parser.ArrayAccessContext || ctx.parent instanceof Java8Parser.ArrayAccess_lfno_primaryContext) {
             String out = "]";
             TranslationUnit.outputNoTab(out);
+            //RC
         }
+        else if (ctx.parent instanceof Java8Parser.BasicForStatementContext) {
+            TranslationUnit.outputNoTab("\n");
+        }
+
     }
 
     @Override
