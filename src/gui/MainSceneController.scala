@@ -74,13 +74,13 @@ class MainSceneController(JavaTextArea: TextArea, PythonTextArea: TextArea, save
 
   def translateOnClick(): Unit = {
     val input = JavaTextArea.getText
-    translate(input, true) match {
+    translate(input) match {
       case (s, None) => updateState(s)
-      case (s, Some(value)) => showDialog(value.message)
+      case (_, Some(value)) => showDialog(value.message)
     }
-    translate(input, false) match {
+    translate(input) match {
       case (s, None) => updateState(s)
-      case (s, Some(value)) => showDialog(value.message)
+      case (_, Some(value)) => showDialog(value.message)
     }
   }
 

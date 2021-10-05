@@ -9,4 +9,8 @@ case class SyntaxError(
         index: Int,
         message: String,
         error: RecognitionException
-)
+) {
+  override def toString: String = {
+    s"$message at line ($line, $index)"
+  }
+}

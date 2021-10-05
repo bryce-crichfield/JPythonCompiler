@@ -14,41 +14,48 @@ import java.nio.charset.StandardCharsets
 // this is likely very inefficient but it works for now
 object TranslationUnit {
 
+  // internal representation of current parsing scope
   private var currentScope: Int = 0
-  private val internalBuilder: StringBuilder = new StringBuilder()
-
-  def show(): String = internalBuilder.mkString
-
-  private def stringToCharStream(str: String): CharStream = {
-    val stream = new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8))
-    CharStreams.fromStream(stream)
-  }
-
-  // this is probably inefficient, will be forced to rebuild AST each time,
-  // works for now via a translate button, but will need to be more resilient once real-time updates are implemented
-  def walk(input: String): List[SyntaxError] = {
-    internalBuilder.clear()
-    val lexer = new Java8Lexer(stringToCharStream(input))
-    val tokens = new CommonTokenStream(lexer)
-    val parser = new Java8Parser(tokens)
-    val errorListener = new ErrorListener
-    parser.addErrorListener(errorListener)
-    val tree = parser.compilationUnit()
-    val walker = new ParseTreeWalker()
-    val parserListener = new ParserListener(parser)
-    walker.walk(parserListener, tree)
-    errorListener.syntaxErrors()
-  }
-
   def enterScope(): Unit = currentScope += 1
   def exitScope(): Unit = currentScope -= 1
-  def tabs(): String = List.fill(currentScope)("\t").mkString
-  def prepended(str: String): String = tabs() + str
+
+  // internal representation of current parsing output
+  private val stringBuilder = new StringBuilder()
+
+  // given some input, will parse it, returning python output and a possible syntax error
+  def process(input: String): (String, Option[SyntaxError]) = {
+    stringBuilder.clear()
+    val lexer = new Java8Lexer(input.toCharStream)
+    val tokens = new CommonTokenStream(lexer)
+    val parser = new Java8Parser(tokens)
+    val tree = parser.compilationUnit()
+    val walker = new ParseTreeWalker()
+    val errorListener = new ErrorListener
+    parser.addErrorListener(errorListener)
+    val parserListener = new ParserListener(parser)
+    walker.walk(parserListener, tree)
+    val error = errorListener.syntaxErrors().headOption
+    val output = stringBuilder.mkString
+    (output, error)
+  }
+
+  // just some useful string extension methods
+  implicit class stringExtension(str: String) {
+    def toCharStream: CharStream = {
+      val stream = new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8))
+      CharStreams.fromStream(stream)
+    }
+
+    def prependTabs(n: Int): String = {
+      List.fill(n)("\t").mkString + str
+    }
+  }
+
   def outputNoTab(str: String): Unit = {
-    internalBuilder.append(str)
+    stringBuilder.append(str)
   }
   def outputWithTab(str: String): Unit = {
-    internalBuilder.append(prepended(str))
+    stringBuilder.append(str.prependTabs(currentScope))
   }
 }
 

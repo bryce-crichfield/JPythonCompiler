@@ -19,35 +19,34 @@ object StateManager {
   def setJavaCode(code: CodeFile): State = {
     currentState match {
       case s: State =>
-        s.setRawInput(code)
+        s.setJavaCode(code)
       case _ => currentState
     }
   }
 
   def getJavaCode(): CodeFile = {
     currentState match {
-      case s: State => s.rawInput
+      case s: State => s.javaCode
       case _ => CodeFile(None, None)
     }
   }
 
   def getPythonCode(): CodeFile = {
     currentState match {
-      case s: State => s.rawOutput
+      case s: State => s.pythonCode
       case _ => CodeFile(None, None)
     }
   }
 
-  // ugh, wish I had a monad for this
-  def translate(input: String, run: Boolean): (State, Option[SyntaxError]) = {
+  def translate(input: String): (State, Option[SyntaxError]) = {
     currentState match {
       case s: State  =>
-        val syntaxErrors = if(run) TranslationUnit.walk(input) else List.empty
-        val output = TranslationUnit.show()
-        val rawInput = s.rawInput.setRaw(input)
-        val rawOutput = s.rawOutput.setRaw(output)
+        val (output, syntaxErrors) = TranslationUnit.process(input)
+        println(syntaxErrors)
+        val rawInput = s.javaCode.setRaw(input)
+        val rawOutput = s.pythonCode.setRaw(output)
         val s2 = State(rawInput, rawOutput)
-        (s2, syntaxErrors.headOption)
+        (s2, syntaxErrors)
       case _ => (currentState, None)
     }
   }
