@@ -1582,12 +1582,17 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterWhileStatement(Java8Parser.WhileStatementContext ctx) {
+        String out = "while ";
+        TranslationUnit.outputWithTab(out);
 
+        //missing part ":" after expression
+        // the spacing is off
     }
 
     @Override
     public void exitWhileStatement(Java8Parser.WhileStatementContext ctx) {
-
+        String out = "\n";
+        TranslationUnit.outputWithTab(out);
     }
 
     @Override
@@ -2250,12 +2255,12 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterAssignment(Java8Parser.AssignmentContext ctx) {
-        TranslationUnit.outputWithTab("");
+        TranslationUnit.outputNoTab("");
     }
 
     @Override
     public void exitAssignment(Java8Parser.AssignmentContext ctx) {
-        TranslationUnit.outputNoTab("\n");
+        TranslationUnit.outputNoTab("");
     }
 
     @Override
