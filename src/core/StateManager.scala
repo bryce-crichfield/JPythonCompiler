@@ -42,7 +42,6 @@ object StateManager {
     currentState match {
       case s: State  =>
         val (output, syntaxErrors) = TranslationUnit.process(input)
-        println(syntaxErrors)
         val rawInput = s.javaCode.setRaw(input)
         val rawOutput = s.pythonCode.setRaw(output)
         val s2 = State(rawInput, rawOutput)

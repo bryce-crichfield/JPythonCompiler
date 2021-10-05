@@ -2,11 +2,15 @@ package parse
 
 import org.antlr.v4.runtime.{BaseErrorListener, RecognitionException, Recognizer}
 
-class ErrorListener extends BaseErrorListener {
+object ErrorListener extends BaseErrorListener {
 
   private var errorList: List[SyntaxError] = List.empty[SyntaxError]
 
-  def syntaxErrors(): List[SyntaxError] = errorList
+  def syntaxErrors(): List[SyntaxError] = {
+    val output = errorList
+    errorList = List.empty[SyntaxError]
+    output
+  }
 
   override def syntaxError(recognizer: Recognizer[_, _],
                            offendingSymbol: Object,

@@ -75,12 +75,22 @@ class MainSceneController(JavaTextArea: TextArea, PythonTextArea: TextArea, save
   def translateOnClick(): Unit = {
     val input = JavaTextArea.getText
     translate(input) match {
-      case (s, None) => updateState(s)
-      case (_, Some(value)) => showDialog(value.message)
+      case (s, None) => {
+        updateState(s)
+      }
+      case (s, Some(value)) => {
+        updateState(s)
+        runLater(showDialog(value.message))
+      }
     }
+    //FIXME I cannot resolve this need to call translate twice, the JavaFX won't update properly otherwise
     translate(input) match {
-      case (s, None) => updateState(s)
-      case (_, Some(value)) => showDialog(value.message)
+      case (s, None) => {
+        updateState(s)
+      }
+      case (s, Some(value)) => {
+        updateState(s)
+      }
     }
   }
 
@@ -91,5 +101,8 @@ class MainSceneController(JavaTextArea: TextArea, PythonTextArea: TextArea, save
     PythonTextArea.setText(PythonTextArea.getText)
   }
 
+  def runLater(r: => Unit): Unit = {
+    Platform.runLater(() => r)
+  }
 
 }

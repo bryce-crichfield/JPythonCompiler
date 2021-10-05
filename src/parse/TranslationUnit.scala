@@ -26,15 +26,16 @@ object TranslationUnit {
   def process(input: String): (String, Option[SyntaxError]) = {
     stringBuilder.clear()
     val lexer = new Java8Lexer(input.toCharStream)
+    lexer.addErrorListener(ErrorListener)
     val tokens = new CommonTokenStream(lexer)
     val parser = new Java8Parser(tokens)
+    parser.addErrorListener(ErrorListener)
     val tree = parser.compilationUnit()
     val walker = new ParseTreeWalker()
-    val errorListener = new ErrorListener
-    parser.addErrorListener(errorListener)
     val parserListener = new ParserListener(parser)
     walker.walk(parserListener, tree)
-    val error = errorListener.syntaxErrors().headOption
+
+    val error = ErrorListener.syntaxErrors().headOption
     val output = stringBuilder.mkString
     (output, error)
   }
