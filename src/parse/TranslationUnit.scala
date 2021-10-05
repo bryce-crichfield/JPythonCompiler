@@ -16,6 +16,13 @@ object TranslationUnit {
 
   // internal representation of current parsing scope
   private var currentScope: Int = 0
+  private[this] var forUpdate: String = _
+
+  def getForUpdate: String = forUpdate
+
+  def setForUpdate(value: String): Unit = {
+    forUpdate = value
+  }
   def enterScope(): Unit = currentScope += 1
   def exitScope(): Unit = currentScope -= 1
 
