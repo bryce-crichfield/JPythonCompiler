@@ -17,6 +17,8 @@ public class ParserListener implements Java8ParserListener {
     private Java8Parser parser;
     private String forUpdate; // RC: Used to store ForUpdate rule context for use in a different rule
     private RuleContext NoPrint;// RC: Used to store the parent rule context of a branch you don't want to print
+    private String arrayType; // RC: Used to store the type of an array for the arrayCreationExpression rule
+    private int arrayDimIndex = -1;
 
     public ParserListener(Java8Parser parser) {
         this.parser = parser;
@@ -628,11 +630,19 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterVariableInitializer(Java8Parser.VariableInitializerContext ctx) {
+        if(ctx.parent instanceof Java8Parser.VariableInitializerListContext) {
+            arrayDimIndex += 1;
+            if(arrayDimIndex != 0) arrayDimIndex += 1;
+          //  TranslationUnit.outputNoTab(arrayDimIndex + ": "); // debug statement
+        }
     }
 
     @Override
     public void exitVariableInitializer(Java8Parser.VariableInitializerContext ctx) {
 
+        if(ctx.parent instanceof Java8Parser.VariableInitializerListContext && arrayDimIndex < ctx.parent.getChildCount()-1) {
+            TranslationUnit.outputNoTab(", ");
+        }
     }
 
     @Override
@@ -1313,22 +1323,25 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterArrayInitializer(Java8Parser.ArrayInitializerContext ctx) {
-
+        String output = "{";
+        TranslationUnit.outputNoTab(output);
     }
 
     @Override
     public void exitArrayInitializer(Java8Parser.ArrayInitializerContext ctx) {
-
+        String output = "}";
+        TranslationUnit.outputNoTab(output);
     }
 
     @Override
     public void enterVariableInitializerList(Java8Parser.VariableInitializerListContext ctx) {
-
+       // TranslationUnit.outputNoTab("Children:  " + ctx.getChildCount()); // debug statement
+        arrayDimIndex = -1;
     }
 
     @Override
     public void exitVariableInitializerList(Java8Parser.VariableInitializerListContext ctx) {
-
+        arrayDimIndex = -1;
     }
 
     @Override
@@ -2147,30 +2160,34 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterArrayCreationExpression(Java8Parser.ArrayCreationExpressionContext ctx) {
-        String output = "[";
+        String output = "";
+        arrayType = ctx.getChild(1).getText();
+        /*
         switch (ctx.getChild(1).getText())
         {
             case "byte":
             case "short":
             case "int":
-                output += "0] * ";
+                output += "[0] * ";
                 break;
             case "boolean":
-                output += "False] * ";
+                output += "[False] * ";
                 break;
             case "long":
-                output += "0L] * ";
+                output += "[0L] * ";
             case "double":
             case "float":
-                output += "0.0] * ";
+                output += "[0.0] * ";
                 break;
             case "char":
-                output += "''] * ";
+                output += "[''] * ";
                 break;
             default: output += "[] * ";
         }
+
         //RC
         TranslationUnit.outputNoTab(output);
+        */
     }
     //Moved the definition from enterDimExprs to here because it was cleaner
     //added switch statement to detect for all primitive and boolean types and keep
@@ -2179,27 +2196,58 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void exitArrayCreationExpression(Java8Parser.ArrayCreationExpressionContext ctx) {
-
+        arrayType = null;
     }
 
     @Override
     public void enterDimExprs(Java8Parser.DimExprsContext ctx) {
-
+        if(ctx.getChildCount() > 1){
+            arrayDimIndex = -1;
+            TranslationUnit.outputNoTab("[");
+        }
     }
 
     @Override
     public void exitDimExprs(Java8Parser.DimExprsContext ctx) {
+        if(ctx.getChildCount() > 1){
+            TranslationUnit.outputNoTab("]");
+            arrayDimIndex = -1;
+        }
 
     }
 
     @Override
     public void enterDimExpr(Java8Parser.DimExprContext ctx) {
-
+        String output = "";
+        arrayDimIndex += 1;
+        switch(arrayType){
+            case "byte":
+            case "short":
+            case "int":
+                output += "[0] * ";
+                break;
+            case "boolean":
+                output += "[False] * ";
+                break;
+            case "long":
+                output += "[0L] * ";
+            case "double":
+            case "float":
+                output += "[0.0] * ";
+                break;
+            case "char":
+                output += "[''] * ";
+                break;
+            default: output += "[] * ";
+        }
+        TranslationUnit.outputNoTab(output);
     }
 
     @Override
     public void exitDimExpr(Java8Parser.DimExprContext ctx) {
-
+        if(ctx.parent instanceof Java8Parser.DimExprsContext && ctx.parent.getChildCount() > 1 && arrayDimIndex < ctx.parent.getChildCount()-1) {
+            TranslationUnit.outputNoTab(", ");
+        }
     }
 
     @Override
@@ -2342,6 +2390,10 @@ public class ParserListener implements Java8ParserListener {
         if(ctx.parent instanceof Java8Parser.ConditionalOrExpressionContext) {
             TranslationUnit.outputNoTab(" or ");
         }
+        else if (ctx.parent instanceof Java8Parser.BasicForStatementContext) {
+            TranslationUnit.outputNoTab("\n");
+        }
+
     }
 
     @Override
@@ -2473,9 +2525,9 @@ public class ParserListener implements Java8ParserListener {
         String out;
         if(ctx.unaryExpression() != null) {
             if(ctx.getChild(0).getText().equals("-")){
-                out = " -";
+                out = "-";
             }else {
-                out = " +";
+                out = "+";
             }
             TranslationUnit.outputNoTab(out);
         }
