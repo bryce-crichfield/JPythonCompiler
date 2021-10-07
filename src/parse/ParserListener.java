@@ -8,11 +8,15 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import parse.antlr.Java8Parser;
 import parse.antlr.Java8ParserListener;
+import scala.reflect.internal.tpe.TypeToStrings;
+
 import java.util.List;
 
 public class ParserListener implements Java8ParserListener {
 
     private Java8Parser parser;
+    private String forUpdate; // RC: Used to store ForUpdate rule context for use in a different rule
+    private RuleContext NoPrint;// RC: Used to store the parent rule context of a branch you don't want to print
 
     public ParserListener(Java8Parser parser) {
         this.parser = parser;
@@ -320,8 +324,8 @@ public class ParserListener implements Java8ParserListener {
     @Override   // have not included ambig. defn.
     public void enterExpressionName(Java8Parser.ExpressionNameContext ctx) {
         String out = "";
-        if (!(ctx.parent instanceof Java8Parser.BasicForStatementContext)) {
-            out += ctx.Identifier().getText(); // RC removed trailing space here and individually added it to the required expressions to not effect output
+        out += ctx.Identifier().getText(); // RC removed trailing space here and individually added it to the required expressions to not effect output
+        if (!(NoPrint instanceof Java8Parser.ForUpdateContext)) {
             TranslationUnit.outputNoTab(out);
         }
     }
@@ -1645,8 +1649,8 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void exitBasicForStatement(Java8Parser.BasicForStatementContext ctx) {
-        TranslationUnit.outputWithTab(TranslationUnit.getForUpdate());
-        TranslationUnit.setForUpdate("");
+        TranslationUnit.outputWithTab(forUpdate);
+        forUpdate = "";
     }
 
     @Override
@@ -1671,12 +1675,25 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterForUpdate(Java8Parser.ForUpdateContext ctx) {
-        TranslationUnit.setForUpdate(ctx.getText());
+        if (ctx.getText().contains("++"))
+        {
+            String frupdte = ctx.getText().substring(0,ctx.getText().indexOf("+"));
+            frupdte += " += 1";
+            forUpdate = frupdte;
+        }
+        else if (ctx.getText().contains("--"))
+        {
+            String frupdte = ctx.getText().substring(0,ctx.getText().indexOf("-"));
+            frupdte += " -= 1";
+            forUpdate = frupdte;
+        }
+        NoPrint = ctx;
     }
 
     @Override
     public void exitForUpdate(Java8Parser.ForUpdateContext ctx) {
-        TranslationUnit.outputNoTab("\n");
+        NoPrint = null;
+        TranslationUnit.outputNoTab("");
     }
 
     @Override
@@ -2476,17 +2493,17 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void exitPreIncrementExpression(Java8Parser.PreIncrementExpressionContext ctx) {
-
+        TranslationUnit.outputNoTab("+1");
     }
 
     @Override
     public void enterPreDecrementExpression(Java8Parser.PreDecrementExpressionContext ctx) {
-        TranslationUnit.outputNoTab("--");
+
     }
 
     @Override
     public void exitPreDecrementExpression(Java8Parser.PreDecrementExpressionContext ctx) {
-
+        TranslationUnit.outputNoTab("-1");
     }
 
     @Override
@@ -2519,7 +2536,8 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void exitPostIncrementExpression(Java8Parser.PostIncrementExpressionContext ctx) {
-        TranslationUnit.outputNoTab("++");
+        if (!(NoPrint instanceof Java8Parser.ForUpdateContext))
+            TranslationUnit.outputNoTab(" += 1");
     }
 
     @Override
@@ -2539,7 +2557,7 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void exitPostDecrementExpression(Java8Parser.PostDecrementExpressionContext ctx) {
-        TranslationUnit.outputNoTab("--");
+        TranslationUnit.outputNoTab(" -= 1");
     }
 
     @Override

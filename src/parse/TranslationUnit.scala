@@ -1,8 +1,6 @@
 package parse
 
-import org.antlr.v4.runtime.CharStream
-import org.antlr.v4.runtime.CharStreams
-import org.antlr.v4.runtime.CommonTokenStream
+import org.antlr.v4.runtime.{CharStream, CharStreams, CommonTokenStream, RuleContext}
 import org.antlr.v4.runtime.tree.ParseTreeWalker
 import parse.antlr.{Java8Lexer, Java8Parser}
 
@@ -16,15 +14,14 @@ object TranslationUnit {
 
   // internal representation of current parsing scope
   private var currentScope: Int = 0
-  private[this] var forUpdate: String = _
 
-  def getForUpdate: String = forUpdate
-
-  def setForUpdate(value: String): Unit = {
-    forUpdate = value
-  }
   def enterScope(): Unit = currentScope += 1
   def exitScope(): Unit = currentScope -= 1
+  def isParent(rule: RuleContext, compare: Java8Parser): Boolean = rule match {
+      case y: compare.type => true
+      case _ => false
+    }
+
 
   // internal representation of current parsing output
   private val stringBuilder = new StringBuilder()
