@@ -22,8 +22,7 @@ public class ParserListener implements Java8ParserListener {
     @Override
     public void enterComment(Java8Parser.CommentContext ctx) {
         //User created, does not work  -TQ
-        String out = "#";
-        TranslationUnit.outputNoTab(out);
+        TranslationUnit.outputNoTab("#");
     }
 
     @Override
@@ -1619,9 +1618,7 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterForStatement(Java8Parser.ForStatementContext ctx) {
-        String out = "for "; // x in range[length] :
-        //how to get numbers?
-        TranslationUnit.outputWithTab(out);
+
     }
 
     @Override
@@ -2475,9 +2472,7 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void exitPreDecrementExpression(Java8Parser.PreDecrementExpressionContext ctx) {
-        //not sure if this really works
-        String out = "+= 1";
-        TranslationUnit.outputWithTab(out);
+
     }
 
     @Override
