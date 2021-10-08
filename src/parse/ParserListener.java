@@ -1603,7 +1603,8 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void exitWhileStatementNoShortIf(Java8Parser.WhileStatementNoShortIfContext ctx) {
-
+        String out = "while ";
+        TranslationUnit.outputWithTab(out);
     }
 
     @Override
@@ -2207,6 +2208,10 @@ public class ParserListener implements Java8ParserListener {
         }
         else if (ctx.parent instanceof Java8Parser.ArrayAccessContext || ctx.parent instanceof Java8Parser.ArrayAccess_lfno_primaryContext) {
             String out = "]";
+            TranslationUnit.outputNoTab(out);
+        }
+        else if(ctx.parent instanceof Java8Parser.WhileStatementNoShortIfContext){
+            String out = ":";
             TranslationUnit.outputNoTab(out);
         }
     }

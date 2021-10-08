@@ -1,7 +1,7 @@
 package core
 
 import io.CodeFile
-import parse.TranslationUnit
+import parse.{SyntaxError, TranslationUnit}
 
 object StateManager {
 
@@ -10,54 +10,43 @@ object StateManager {
   def state(): State = currentState
 
 
-  def transition(state: State): Unit = {
+  def updateState(state: State): Unit = {
     currentState = state
     App.setStage(state.stage)
   }
 
   // TODO: Refactor the matching logic
-  def setJavaCode(code: CodeFile): Unit = {
+  def setJavaCode(code: CodeFile): State = {
     currentState match {
       case s: State =>
-        val s2 = s.setRawInput(code)
-        transition(s2)
-      case _ => ()
+        s.setJavaCode(code)
+      case _ => currentState
     }
   }
 
   def getJavaCode(): CodeFile = {
     currentState match {
-      case s: State => s.rawInput
+      case s: State => s.javaCode
       case _ => CodeFile(None, None)
-    }
-  }
-
-  def setPythonCode(code: CodeFile): Unit = {
-    currentState match {
-      case s: State =>
-        val s2 = s.setRawOutput(code)
-        transition(s2)
-      case _ => ()
     }
   }
 
   def getPythonCode(): CodeFile = {
     currentState match {
-      case s: State => s.rawOutput
+      case s: State => s.pythonCode
       case _ => CodeFile(None, None)
     }
   }
 
-  def translate(input: String, run: Boolean): Unit = {
+  def translate(input: String): (State, Option[SyntaxError]) = {
     currentState match {
-      case s: State =>
-        if(run) TranslationUnit.walk(input)
-        val output = TranslationUnit.show()
-        val rawInput = s.rawInput.setRaw(input)
-        val rawOutput = s.rawOutput.setRaw(output)
+      case s: State  =>
+        val (output, syntaxErrors) = TranslationUnit.process(input)
+        val rawInput = s.javaCode.setRaw(input)
+        val rawOutput = s.pythonCode.setRaw(output)
         val s2 = State(rawInput, rawOutput)
-        transition(s2)
-      case _ => ()
+        (s2, syntaxErrors)
+      case _ => (currentState, None)
     }
   }
 

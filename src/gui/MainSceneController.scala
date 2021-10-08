@@ -1,7 +1,8 @@
 package gui
 
+import core.StateManager.{setJavaCode, translate, updateState}
 import core.{App, StateManager}
-import gui.UIUtilities.{openFileChooser, openOperation, saveFileChooser}
+import gui.UIUtilities.{openFileChooser, openOperation, saveFileChooser, showDialog}
 import io.{CodeFile, IO}
 import javafx.application.Platform
 import javafx.scene.control.{MenuItem, TextArea}
@@ -10,14 +11,12 @@ import scalafxml.core.macros.sfxml
 @sfxml
 class MainSceneController(JavaTextArea: TextArea, PythonTextArea: TextArea, saveMenuItem: MenuItem) {
 
-  initialize()
+  // [ INITIALIZATION ]
+  setSaveMenuItemStatus()
+  setTitle()
+  forceBinding()
 
-  //Is called each time any button is clicked
-  def initialize(): Unit = {
-    setSaveMenuItemStatus()
-    setTitle()
-    forceBinding()
-  }
+
 
   def saveOnClick(): Unit = {
     val text = Option(JavaTextArea.getText)
@@ -30,7 +29,7 @@ class MainSceneController(JavaTextArea: TextArea, PythonTextArea: TextArea, save
       case Some(file) =>
         val text = Option(JavaTextArea.getText)
         val code = CodeFile.withString(Some(file), text)
-        StateManager.setJavaCode(code)
+        updateState(setJavaCode(code))
         IO.saveCodeToFile(code)
         forceBinding()
       case None => ()
@@ -39,7 +38,7 @@ class MainSceneController(JavaTextArea: TextArea, PythonTextArea: TextArea, save
 
   def openOnClick(): Unit = {
     openFileChooser().flatMap(file => openOperation(file)) match {
-      case Some(code) => StateManager.setJavaCode(code)
+      case Some(code) => updateState(setJavaCode(code))
       case None => ()
     }
     forceBinding()  // I really don't know why this is necessary, but it forces JFX to update
@@ -66,7 +65,6 @@ class MainSceneController(JavaTextArea: TextArea, PythonTextArea: TextArea, save
     saveMenuItem.setDisable(shouldEnable)
   }
 
-  // TODO: BackOnClick not resetting the title
   private def setTitle(): Unit = {
     StateManager.getJavaCode().file match {
       case Some(file) => App.getStage().setTitle(file.getName)
@@ -75,10 +73,24 @@ class MainSceneController(JavaTextArea: TextArea, PythonTextArea: TextArea, save
   }
 
   def translateOnClick(): Unit = {
-    //idk why it needs to be ran twice???
-    runLater {
-      StateManager.translate(JavaTextArea.getText, true)
-      StateManager.translate(JavaTextArea.getText, false)
+    val input = JavaTextArea.getText
+    translate(input) match {
+      case (s, None) => {
+        updateState(s)
+      }
+      case (s, Some(value)) => {
+        updateState(s)
+        runLater(showDialog(value.message))
+      }
+    }
+    //FIXME I cannot resolve this need to call translate twice, the JavaFX won't update properly otherwise
+    translate(input) match {
+      case (s, None) => {
+        updateState(s)
+      }
+      case (s, Some(value)) => {
+        updateState(s)
+      }
     }
   }
 
@@ -89,10 +101,8 @@ class MainSceneController(JavaTextArea: TextArea, PythonTextArea: TextArea, save
     PythonTextArea.setText(PythonTextArea.getText)
   }
 
-  def runLater(f: => Unit) : Unit = {
-    Platform.runLater(new Runnable {
-      override def run(): Unit = f
-    })
+  def runLater(r: => Unit): Unit = {
+    Platform.runLater(() => r)
   }
 
 }
