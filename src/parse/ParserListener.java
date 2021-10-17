@@ -11,11 +11,12 @@ import parse.antlr.Java8ParserListener;
 import scala.reflect.internal.tpe.TypeToStrings;
 
 import java.util.List;
+import java.util.Stack;
 
 public class ParserListener implements Java8ParserListener {
 
     private Java8Parser parser;
-    private String forUpdate; // RC: Used to store ForUpdate rule context for use in a different rule
+    private Stack<String> forUpdate = new Stack<String>(); // RC: Used to store ForUpdate rule context for use in a different rule
     private RuleContext NoPrint;// RC: Used to store the parent rule context of a branch you don't want to print
     private String arrayType; // RC: Used to store the type of an array for the arrayCreationExpression rule
     private int arrayDimIndex = -1;
@@ -1662,8 +1663,7 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void exitBasicForStatement(Java8Parser.BasicForStatementContext ctx) {
-        TranslationUnit.outputWithTab(forUpdate);
-        forUpdate = "";
+        TranslationUnit.outputWithTab(forUpdate.pop());
     }
 
     @Override
@@ -1692,13 +1692,13 @@ public class ParserListener implements Java8ParserListener {
         {
             String frupdte = ctx.getText().substring(0,ctx.getText().indexOf("+"));
             frupdte += " += 1";
-            forUpdate = frupdte;
+            forUpdate.push(frupdte); // BC: just push the new string onto the stack
         }
         else if (ctx.getText().contains("--"))
         {
             String frupdte = ctx.getText().substring(0,ctx.getText().indexOf("-"));
             frupdte += " -= 1";
-            forUpdate = frupdte;
+            forUpdate.push(frupdte);
         }
         NoPrint = ctx;
     }
