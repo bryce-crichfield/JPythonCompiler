@@ -1339,12 +1339,13 @@ public class ParserListener implements Java8ParserListener {
 
         if(ctx.blockStatements() == null) {
             TranslationUnit.outputWithTab("pass\n");
-        }
+        } //TQ
     }
 
     @Override
     public void exitBlock(Java8Parser.BlockContext ctx) {
         // causes scope decrease
+        // might be able to new line here but idk if that would help
         TranslationUnit.exitScope();
     }
 
@@ -1491,6 +1492,7 @@ public class ParserListener implements Java8ParserListener {
     @Override
     public void exitIfThenStatement(Java8Parser.IfThenStatementContext ctx) {
         String out = "\n";
+//        String out = "";
         TranslationUnit.outputWithTab(out);
     }
 
@@ -1508,6 +1510,7 @@ public class ParserListener implements Java8ParserListener {
     @Override
     public void exitIfThenElseStatement(Java8Parser.IfThenElseStatementContext ctx) {
         String out = "\n";
+//        String out = "";
         TranslationUnit.outputWithTab(out);
     }
 
@@ -1519,7 +1522,8 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void exitIfThenElseStatementNoShortIf(Java8Parser.IfThenElseStatementNoShortIfContext ctx) {
-        String out = "\n";
+//        String out = "\n";
+        String out = "";
         TranslationUnit.outputWithTab(out);
     }
 
@@ -1645,12 +1649,13 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterBasicForStatement(Java8Parser.BasicForStatementContext ctx) {
-
+        // print while here
     }
 
     @Override
     public void exitBasicForStatement(Java8Parser.BasicForStatementContext ctx) {
-        TranslationUnit.outputWithTab(forUpdate.pop());
+        String out = "\t" + forUpdate.pop() + "\n";
+        TranslationUnit.outputWithTab(out);
     }
 
     @Override
@@ -2222,7 +2227,7 @@ public class ParserListener implements Java8ParserListener {
         else if (ctx.parent instanceof Java8Parser.BasicForStatementContext) {
             out = "while ";
             TranslationUnit.outputWithTab(out);
-        }
+        } //
 
     }
 
@@ -2237,7 +2242,7 @@ public class ParserListener implements Java8ParserListener {
             //RC
         }
         else if (ctx.parent instanceof Java8Parser.BasicForStatementContext) {
-            TranslationUnit.outputNoTab("\n");
+            TranslationUnit.outputNoTab(":\n");
         }
 
     }

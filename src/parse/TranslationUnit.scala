@@ -1,8 +1,6 @@
 package parse
 
-import org.antlr.v4.runtime.CharStream
-import org.antlr.v4.runtime.CharStreams
-import org.antlr.v4.runtime.CommonTokenStream
+import org.antlr.v4.runtime.{CharStream, CharStreams, CommonTokenStream, RuleContext}
 import org.antlr.v4.runtime.tree.ParseTreeWalker
 import parse.antlr.{Java8Lexer, Java8Parser}
 
@@ -14,38 +12,55 @@ import java.nio.charset.StandardCharsets
 // this is likely very inefficient but it works for now
 object TranslationUnit {
 
+  // internal representation of current parsing scope
   private var currentScope: Int = 0
-  private val internalBuilder: StringBuilder = new StringBuilder()
-
-  def show(): String = internalBuilder.mkString
-
-  private def stringToCharStream(str: String): CharStream = {
-    val stream = new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8))
-    CharStreams.fromStream(stream)
-  }
-
-  // this is probably inefficient, will be forced to rebuild AST each time,
-  // works for now via a translate button, but will need to be more resilient once real-time updates are implemented
-  def walk(input: String): Unit = {
-    internalBuilder.clear()
-    val lexer = new Java8Lexer(stringToCharStream(input))
-    val tokens = new CommonTokenStream(lexer)
-    val parser = new Java8Parser(tokens)
-    val tree = parser.compilationUnit()
-    val walker = new ParseTreeWalker()
-    val listener = new ParserListener(parser)
-    walker.walk(listener, tree)
-  }
 
   def enterScope(): Unit = currentScope += 1
   def exitScope(): Unit = currentScope -= 1
-  def tabs(): String = List.fill(currentScope)("\t").mkString
-  def prepended(str: String): String = tabs() + str
+  def isParent(rule: RuleContext, compare: Java8Parser): Boolean = rule match {
+      case y: compare.type => true
+      case _ => false
+    }
+
+
+  // internal representation of current parsing output
+  private val stringBuilder = new StringBuilder()
+
+  // given some input, will parse it, returning python output and a possible syntax error
+  def process(input: String): (String, Option[SyntaxError]) = {
+    stringBuilder.clear()
+    val lexer = new Java8Lexer(input.toCharStream)
+    lexer.addErrorListener(ErrorListener)
+    val tokens = new CommonTokenStream(lexer)
+    val parser = new Java8Parser(tokens)
+    parser.addErrorListener(ErrorListener)
+    val tree = parser.compilationUnit()
+    val walker = new ParseTreeWalker()
+    val parserListener = new ParserListener(parser)
+    walker.walk(parserListener, tree)
+
+    val error = ErrorListener.syntaxErrors().headOption
+    val output = stringBuilder.mkString
+    (output, error)
+  }
+
+  // just some useful string extension methods
+  implicit class stringExtension(str: String) {
+    def toCharStream: CharStream = {
+      val stream = new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8))
+      CharStreams.fromStream(stream)
+    }
+
+    def prependTabs(n: Int): String = {
+      List.fill(n)("\t").mkString + str
+    }
+  }
+
   def outputNoTab(str: String): Unit = {
-    internalBuilder.append(str)
+    stringBuilder.append(str)
   }
   def outputWithTab(str: String): Unit = {
-    internalBuilder.append(prepended(str))
+    stringBuilder.append(str.prependTabs(currentScope))
   }
 }
 
