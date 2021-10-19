@@ -7,6 +7,7 @@ import parse.antlr.{Java8Lexer, Java8Parser}
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.nio.charset.StandardCharsets
+import scala.collection.convert.ImplicitConversions.`collection AsScalaIterable`
 
 // acts as a container for the ANTLR logics
 // this is likely very inefficient but it works for now
@@ -41,7 +42,8 @@ object TranslationUnit {
 
     val error = ErrorListener.syntaxErrors().headOption
     val output = stringBuilder.mkString
-    (output, error)
+    val outputNoExtraLines = output.lines().toList.map(line => if(line.isBlank) "" else line + "\n").mkString
+    (outputNoExtraLines, error)
   }
 
   // just some useful string extension methods
