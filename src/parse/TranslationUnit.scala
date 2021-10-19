@@ -7,7 +7,9 @@ import parse.antlr.{Java8Lexer, Java8Parser}
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.nio.charset.StandardCharsets
+import java.util.stream.{Collector, Collectors}
 import scala.collection.convert.ImplicitConversions.`collection AsScalaIterable`
+import scala.collection.mutable.ListBuffer
 
 // acts as a container for the ANTLR logics
 // this is likely very inefficient but it works for now
@@ -42,7 +44,9 @@ object TranslationUnit {
 
     val error = ErrorListener.syntaxErrors().headOption
     val output = stringBuilder.mkString
-    val outputNoExtraLines = output.lines().toList.map(line => if(line.isBlank) "" else line + "\n").mkString
+    val lines = ListBuffer[String]()
+    output.lines().forEach(l => lines.addOne(l))
+    val outputNoExtraLines = lines.map(line => if(line.isBlank) "" else line + "\n").mkString
     (outputNoExtraLines, error)
   }
 
