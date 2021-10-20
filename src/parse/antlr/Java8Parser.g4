@@ -170,7 +170,7 @@ typeBound
 
 additionalBound
 	:	'&' interfaceType
-	;primitive
+	;
 
 typeArguments
 	:	'<' typeArgumentList '>'

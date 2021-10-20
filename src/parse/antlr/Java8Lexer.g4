@@ -1118,9 +1118,9 @@ WS  :  [ \t\r\n\u000C]+ -> skip
     ;
 
 COMMENT
-    :   '/*' .*? '*/' //-> skip
+    :   '/*' .*? '*/'-> channel(1)
     ;
 
 LINE_COMMENT
-    :   '//' ~[\r\n]* //-> skip
+    :   '//' ~[\r\n]* -> channel(1)
     ;
