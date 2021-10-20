@@ -43,11 +43,8 @@ object TranslationUnit {
     walker.walk(parserListener, tree)
 
     val error = ErrorListener.syntaxErrors().headOption
-    val output = stringBuilder.mkString
-    val lines = ListBuffer[String]()
-    output.lines().forEach(l => lines.addOne(l))
-    val outputNoExtraLines = lines.map(line => if(line.isBlank) "" else line + "\n").mkString
-    (outputNoExtraLines, error)
+    val output = removeBlankLines(stringBuilder.mkString)
+    (output, error)
   }
 
   // just some useful string extension methods
@@ -67,6 +64,12 @@ object TranslationUnit {
   }
   def outputWithTab(str: String): Unit = {
     stringBuilder.append(str.prependTabs(currentScope))
+  }
+
+  private def removeBlankLines(withLines: String): String = {
+    val buffer = new ListBuffer[String]()
+    withLines.lines().forEach(line => buffer.addOne(line))
+    buffer.map(line => if(line.isBlank) "" else line + "\n").mkString
   }
 }
 

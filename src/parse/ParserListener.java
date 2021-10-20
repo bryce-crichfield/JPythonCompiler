@@ -1612,7 +1612,8 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterWhileStatement(Java8Parser.WhileStatementContext ctx) {
-
+        String out = "while ";
+        TranslationUnit.outputWithTab(out);
     }
 
     @Override
@@ -2289,7 +2290,7 @@ public class ParserListener implements Java8ParserListener {
             TranslationUnit.outputNoTab(out);
             //RC
         }
-        else if (ctx.parent instanceof Java8Parser.BasicForStatementContext) {
+        else if (ctx.parent instanceof Java8Parser.BasicForStatementContext || ctx.parent instanceof Java8Parser.WhileStatementContext) {
             TranslationUnit.outputNoTab(":\n");
         }
 
