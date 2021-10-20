@@ -18,11 +18,6 @@ object TranslationUnit {
 
   def enterScope(): Unit = currentScope += 1
   def exitScope(): Unit = currentScope -= 1
-  def isParent(rule: RuleContext, compare: Java8Parser): Boolean = rule match {
-      case y: compare.type => true
-      case _ => false
-    }
-
 
   // internal representation of current parsing output
   private val stringBuilder = new StringBuilder()

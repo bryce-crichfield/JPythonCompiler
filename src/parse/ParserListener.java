@@ -37,7 +37,6 @@ public class ParserListener implements Java8ParserListener {
     @Override
     public void enterLiteral(Java8Parser.LiteralContext ctx) {
         String out = ctx.getText();
-
         if(out.equals("true")) {out = "True";}
         else if(out.equals("false")) {out = "False";}
         if((ctx.IntegerLiteral() != null || ctx.FloatingPointLiteral() != null) && ctx.getText().charAt(ctx.getText().length() - 1) > 57) {
