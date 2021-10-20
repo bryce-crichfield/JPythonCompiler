@@ -9,6 +9,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import parse.antlr.Java8Parser;
 import parse.antlr.Java8ParserListener;
 import scala.reflect.internal.tpe.TypeToStrings;
+import scala.reflect.internal.util.NoPosition;
 
 import java.util.List;
 import java.util.Stack;
@@ -38,14 +39,19 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterLiteral(Java8Parser.LiteralContext ctx) {
-        String out = ctx.getText();
-        if(out.equals("true")) {out = "True";}
-        else if(out.equals("false")) {out = "False";}
-        if((ctx.IntegerLiteral() != null || ctx.FloatingPointLiteral() != null) && ctx.getText().charAt(ctx.getText().length() - 1) > 57) {
-            out = out.substring(0, ctx.getText().length() - 1);
-        }
+        if(!(NoPrint instanceof Java8Parser.DimExprContext)) {
+            String out = ctx.getText();
+            if (out.equals("true")) {
+                out = "True";
+            } else if (out.equals("false")) {
+                out = "False";
+            }
+            if ((ctx.IntegerLiteral() != null || ctx.FloatingPointLiteral() != null) && ctx.getText().charAt(ctx.getText().length() - 1) > 57) {
+                out = out.substring(0, ctx.getText().length() - 1);
+            }
 
-        TranslationUnit.outputNoTab(out);
+            TranslationUnit.outputNoTab(out);
+        }
     }
 
     @Override
@@ -330,6 +336,8 @@ public class ParserListener implements Java8ParserListener {
         if (!(NoPrint instanceof Java8Parser.ForUpdateContext)) {
             TranslationUnit.outputNoTab(out);
         }
+
+
     }
 
     @Override
@@ -2206,10 +2214,40 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterDimExprs(Java8Parser.DimExprsContext ctx) {
+        //This rule only gets called from ArrayCreationExpression
+        String output = "";
         if(ctx.getChildCount() > 1){
-            arrayDimIndex = -1;
-            TranslationUnit.outputNoTab("[");
+            output += "[";
+            int first = Integer.parseInt(ctx.getChild(0).getChild(1).getText());
+            int second = Integer.parseInt(ctx.getChild(1).getChild(1).getText());
+            for(int i = 0; i < first; i++){
+                switch(arrayType) {
+                    case "byte":
+                    case "short":
+                    case "int":
+                        output += "[0] * ";
+                        break;
+                    case "boolean":
+                        output += "[False] * ";
+                        break;
+                    case "long":
+                        output += "[0L] * ";
+                    case "double":
+                    case "float":
+                        output += "[0.0] * ";
+                        break;
+                    case "char":
+                        output += "[''] * ";
+                        break;
+                    default:
+                        output += "[] * ";
+                }
+                output += second;
+                if(i != first-1)
+                    output += ", ";
+            }
         }
+        TranslationUnit.outputNoTab(output);
     }
 
     @Override
@@ -2224,6 +2262,8 @@ public class ParserListener implements Java8ParserListener {
     @Override
     public void enterDimExpr(Java8Parser.DimExprContext ctx) {
         String output = "";
+        NoPrint = ctx;
+        /*
         arrayDimIndex += 1;
         switch(arrayType){
             case "byte":
@@ -2244,15 +2284,20 @@ public class ParserListener implements Java8ParserListener {
                 output += "[''] * ";
                 break;
             default: output += "[] * ";
+
+
         }
         TranslationUnit.outputNoTab(output);
+
+         */
     }
 
     @Override
     public void exitDimExpr(Java8Parser.DimExprContext ctx) {
         if(ctx.parent instanceof Java8Parser.DimExprsContext && ctx.parent.getChildCount() > 1 && arrayDimIndex < ctx.parent.getChildCount()-1) {
-            TranslationUnit.outputNoTab(", ");
+            TranslationUnit.outputNoTab("");
         }
+        NoPrint = null;
     }
 
     @Override
