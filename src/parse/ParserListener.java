@@ -2216,36 +2216,42 @@ public class ParserListener implements Java8ParserListener {
     public void enterDimExprs(Java8Parser.DimExprsContext ctx) {
         //This rule only gets called from ArrayCreationExpression
         String output = "";
-        if(ctx.getChildCount() > 1){
+        int first;
+        int second;
+        if (ctx.getChildCount() > 1) {
+            first = Integer.parseInt(ctx.getChild(0).getChild(1).getText());
+            second = Integer.parseInt(ctx.getChild(1).getChild(1).getText());
             output += "[";
-            int first = Integer.parseInt(ctx.getChild(0).getChild(1).getText());
-            int second = Integer.parseInt(ctx.getChild(1).getChild(1).getText());
-            for(int i = 0; i < first; i++){
-                switch(arrayType) {
-                    case "byte":
-                    case "short":
-                    case "int":
-                        output += "[0] * ";
-                        break;
-                    case "boolean":
-                        output += "[False] * ";
-                        break;
-                    case "long":
-                        output += "[0L] * ";
-                    case "double":
-                    case "float":
-                        output += "[0.0] * ";
-                        break;
-                    case "char":
-                        output += "[''] * ";
-                        break;
-                    default:
-                        output += "[] * ";
-                }
-                output += second;
-                if(i != first-1)
-                    output += ", ";
+        }
+        else {
+            first = 1;
+            second = Integer.parseInt(ctx.getChild(0).getChild(1).getText());
+        }
+        for(int i = 0; i < first; i++){
+            switch(arrayType) {
+                case "byte":
+                case "short":
+                case "int":
+                    output += "[0] * ";
+                    break;
+                case "boolean":
+                    output += "[False] * ";
+                    break;
+                case "long":
+                    output += "[0L] * ";
+                case "double":
+                case "float":
+                    output += "[0.0] * ";
+                    break;
+                case "char":
+                    output += "[''] * ";
+                    break;
+                default:
+                    output += "[] * ";
             }
+            output += second;
+            if(i != first-1)
+                output += ", ";
         }
         TranslationUnit.outputNoTab(output);
     }
