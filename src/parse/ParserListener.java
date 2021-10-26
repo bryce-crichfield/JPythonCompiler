@@ -331,17 +331,25 @@ public class ParserListener implements Java8ParserListener {
 
     @Override   // have not included ambig. defn.
     public void enterExpressionName(Java8Parser.ExpressionNameContext ctx) {
-        String out = "";
-        out += ctx.Identifier().getText(); // RC removed trailing space here and individually added it to the required expressions to not effect output
-        if (!(NoPrint instanceof Java8Parser.ForUpdateContext)) {
-            TranslationUnit.outputNoTab(out);
+        if (ctx.Identifier().getText().equals("length")){
+            TranslationUnit.outputNoTab("len(");
         }
-
 
     }
 
     @Override
     public void exitExpressionName(Java8Parser.ExpressionNameContext ctx) {
+        String out = "";
+        if(ctx.getChildCount() > 1){
+            out += '.';
+        }
+        out += ctx.Identifier().getText(); // RC removed trailing space here and individually added it to the required expressions to not effect output
+        if (!(NoPrint instanceof Java8Parser.ForUpdateContext)) {
+            if (!ctx.Identifier().getText().equals("length")) { // RC 10/26
+                TranslationUnit.outputNoTab(out);
+            }
+            else TranslationUnit.outputNoTab(")"); // RC 10/26 added these statements to account for a special situation of array length access
+        }
 /*
         if (TranslationUnit.show().contains("[") && !TranslationUnit.show().contains("]")) {
             String out = "]";
@@ -362,7 +370,13 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterAmbiguousName(Java8Parser.AmbiguousNameContext ctx) {
-
+        String output = ctx.Identifier().getText();
+        if(ctx.getChildCount() > 1){
+            TranslationUnit.outputNoTab("." + output);
+        }
+        else{
+            TranslationUnit.outputNoTab(output);
+        } // RC member access
     }
 
     @Override
@@ -1331,13 +1345,13 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterArrayInitializer(Java8Parser.ArrayInitializerContext ctx) {
-        String output = "{";
+        String output = "[";
         TranslationUnit.outputNoTab(output);
     }
 
     @Override
     public void exitArrayInitializer(Java8Parser.ArrayInitializerContext ctx) {
-        String output = "}";
+        String output = "]";
         TranslationUnit.outputNoTab(output);
     }
 
@@ -1754,12 +1768,12 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterBreakStatement(Java8Parser.BreakStatementContext ctx) {
-
+        TranslationUnit.outputWithTab("pass");
     }
 
     @Override
     public void exitBreakStatement(Java8Parser.BreakStatementContext ctx) {
-
+        TranslationUnit.outputNoTab("\n");
     }
 
     @Override
@@ -2044,7 +2058,6 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterFieldAccess(Java8Parser.FieldAccessContext ctx) {
-
     }
 
     @Override
@@ -2054,7 +2067,6 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterFieldAccess_lf_primary(Java8Parser.FieldAccess_lf_primaryContext ctx) {
-
     }
 
     @Override
@@ -2064,7 +2076,6 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterFieldAccess_lfno_primary(Java8Parser.FieldAccess_lfno_primaryContext ctx) {
-
     }
 
     @Override
@@ -2644,8 +2655,9 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void exitPostIncrementExpression(Java8Parser.PostIncrementExpressionContext ctx) {
-        if (!(NoPrint instanceof Java8Parser.ForUpdateContext))
+        if (!(NoPrint instanceof Java8Parser.ForUpdateContext)) {
             TranslationUnit.outputNoTab(" += 1");
+        }
     }
 
     @Override
