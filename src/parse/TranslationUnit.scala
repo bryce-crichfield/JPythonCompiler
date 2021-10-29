@@ -33,9 +33,9 @@ object TranslationUnit {
     val parser = new Java8Parser(tokens)
     parser.addErrorListener(ErrorListener)
     val tree = parser.compilationUnit()
-    val walker = new ParseTreeWalker()
     val parserListener = new ParserListener(parser)
-    walker.walk(parserListener, tree)
+    val walker = new JavaParseTreeWalker(parserListener)
+    walker.walk(tree)
 
     val error = ErrorListener.syntaxErrors().headOption
     val output = removeBlankLines(stringBuilder.mkString)

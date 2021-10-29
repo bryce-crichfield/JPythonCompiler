@@ -17,7 +17,6 @@ import java.util.Stack;
 public class ParserListener implements Java8ParserListener {
 
     private Java8Parser parser;
-    private Stack<String> forUpdate = new Stack<String>(); // RC: Used to store ForUpdate rule context for use in a different rule
     private RuleContext NoPrint;// RC: Used to store the parent rule context of a branch you don't want to print
     private String arrayType; // RC: Used to store the type of an array for the arrayCreationExpression rule
     private int arrayDimIndex = -1;
@@ -1684,13 +1683,10 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterBasicForStatement(Java8Parser.BasicForStatementContext ctx) {
-        // print while here
     }
 
     @Override
     public void exitBasicForStatement(Java8Parser.BasicForStatementContext ctx) {
-        String out = "\t" + forUpdate.pop() + "\n";
-        TranslationUnit.outputWithTab(out);
     }
 
     @Override
@@ -1715,25 +1711,14 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterForUpdate(Java8Parser.ForUpdateContext ctx) {
-        if (ctx.getText().contains("++"))
-        {
-            String frupdte = ctx.getText().substring(0,ctx.getText().indexOf("+"));
-            frupdte += " += 1";
-            forUpdate.push(frupdte); // BC: just push the new string onto the stack
-        }
-        else if (ctx.getText().contains("--"))
-        {
-            String frupdte = ctx.getText().substring(0,ctx.getText().indexOf("-"));
-            frupdte += " -= 1";
-            forUpdate.push(frupdte);
-        }
-        NoPrint = ctx;
+        TranslationUnit.enterScope(); // BC: this forces the update statement to maintain tabbing as though it were a block statement
+        TranslationUnit.outputWithTab(""); // BC: this will force tabs to be inserted
     }
 
     @Override
     public void exitForUpdate(Java8Parser.ForUpdateContext ctx) {
-        NoPrint = null;
-        TranslationUnit.outputNoTab("");
+        TranslationUnit.outputNoTab("\n"); // BC: just make sure we newline and scope out and TU will handle tabbing
+        TranslationUnit.exitScope();
     }
 
     @Override
@@ -2655,9 +2640,8 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void exitPostIncrementExpression(Java8Parser.PostIncrementExpressionContext ctx) {
-        if (!(NoPrint instanceof Java8Parser.ForUpdateContext)) {
-            TranslationUnit.outputNoTab(" += 1");
-        }
+
+        TranslationUnit.outputNoTab(" += 1");
     }
 
     @Override
