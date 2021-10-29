@@ -1,25 +1,39 @@
 package parse;
 
 import com.sun.marlin.DTransformingPathConsumer2D;
+import javafx.animation.TranslateTransition;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
-import org.antlr.v4.runtime.tree.ErrorNode;
-import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.TerminalNode;
+import org.antlr.v4.runtime.tree.*;
 import parse.antlr.Java8Parser;
 import parse.antlr.Java8ParserListener;
 import scala.reflect.internal.tpe.TypeToStrings;
 import scala.reflect.internal.util.NoPosition;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
 public class ParserListener implements Java8ParserListener {
-
+    private JavaParseTreeWalker utilityWalker = new JavaParseTreeWalker(this); // BC: can be used for times when re-walking a statement is needed
     private Java8Parser parser;
+    private Stack<Java8Parser.ForUpdateContext> forUpdates = new Stack<>();
     private RuleContext NoPrint;// RC: Used to store the parent rule context of a branch you don't want to print
     private String arrayType; // RC: Used to store the type of an array for the arrayCreationExpression rule
     private int arrayDimIndex = -1;
+
+    private static ArrayList<RuleContext> getChildrenContexts(RuleContext ctx) {
+        int n = ctx.getChildCount();
+        ArrayList<RuleContext> children = new ArrayList<>();
+        for(int i = 0; i < n; i++) {
+            ParseTree childAsTree = ctx.getChild(i);
+            if(!(childAsTree instanceof TerminalNodeImpl)) {
+                children.add((RuleContext) childAsTree);
+            }
+        }
+        return children;
+    }
+
 
     public ParserListener(Java8Parser parser) {
         this.parser = parser;
@@ -1683,10 +1697,18 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterBasicForStatement(Java8Parser.BasicForStatementContext ctx) {
+        // BC: for now I am assuming that a forStatement always has a forUpdate
+        Java8Parser.ForUpdateContext forUpdate = (Java8Parser.ForUpdateContext) getChildrenContexts(ctx)
+                .stream()
+                .filter(c -> c instanceof Java8Parser.ForUpdateContext)
+                .findFirst()
+                .get();
+        forUpdates.push(forUpdate); // BC : used so the continue statement has access to the forUpdate context
     }
 
     @Override
     public void exitBasicForStatement(Java8Parser.BasicForStatementContext ctx) {
+        forUpdates.pop();
     }
 
     @Override
@@ -1763,7 +1785,10 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterContinueStatement(Java8Parser.ContinueStatementContext ctx) {
-
+        TranslationUnit.exitScope();        // BC: we need to manage the exit and enter scope for this special case
+        utilityWalker.walk(forUpdates.peek()); // BC: walk to the forUpdate at the top of the stack, but don't pop in-case other continue statements exist in scope
+        TranslationUnit.enterScope();       // BC: popping is handled at the level of exiting the basicForStatement
+        TranslationUnit.outputWithTab("continue");
     }
 
     @Override
