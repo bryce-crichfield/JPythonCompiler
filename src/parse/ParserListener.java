@@ -344,8 +344,8 @@ public class ParserListener implements Java8ParserListener {
 
     @Override   // have not included ambig. defn.
     public void enterExpressionName(Java8Parser.ExpressionNameContext ctx) {
-        if (ctx.Identifier().getText().equals("length")){
-            TranslationUnit.outputNoTab("len(");
+        if (ctx.Identifier().getText().equals("println")){
+            TranslationUnit.outputNoTab("print(");
         }
 
     }
@@ -358,7 +358,7 @@ public class ParserListener implements Java8ParserListener {
         }
         out += ctx.Identifier().getText(); // RC removed trailing space here and individually added it to the required expressions to not effect output
         if (!(NoPrint instanceof Java8Parser.ForUpdateContext)) {
-            if (!ctx.Identifier().getText().equals("length")) { // RC 10/26
+            if (!ctx.Identifier().getText().equals("println")) { // RC 10/26
                 TranslationUnit.outputNoTab(out);
             }
             else TranslationUnit.outputNoTab(")"); // RC 10/26 added these statements to account for a special situation of array length access

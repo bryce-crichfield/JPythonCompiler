@@ -20,6 +20,14 @@ class JavaParseTreeWalker(private val listener: ParseTreeListener) {
     walk(children.filter(f => f.isInstanceOf[ForUpdateContext]).head)
   }
 
+  private def doClassDeclarationWalk(implicit children: List[ParseTree]): Unit = {
+    children foreach {
+      case _: ClassDeclarationContext => ()
+      case child: Any => walk(child)
+    }
+    children.filter(f => f.isInstanceOf[ClassDeclarationContext]) foreach walk
+  }
+
   private def doDefaultWalk(implicit children: List[ParseTree]): Unit = {
     children foreach { child => walk(child) }
   }
@@ -34,6 +42,8 @@ class JavaParseTreeWalker(private val listener: ParseTreeListener) {
       rule.getRuleContext match {
         case _ @ (_: BasicForStatementContext | _: BasicForStatementNoShortIfContext)  =>
           doForUpdateWalk
+        case _: ClassDeclarationContext =>
+          doClassDeclarationWalk
         case _ =>
           doDefaultWalk
       }
