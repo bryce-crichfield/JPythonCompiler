@@ -1,14 +1,13 @@
 package parse;
 
-import com.sun.marlin.DTransformingPathConsumer2D;
-import javafx.animation.TranslateTransition;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
-import org.antlr.v4.runtime.tree.*;
+import org.antlr.v4.runtime.tree.ErrorNode;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.TerminalNode;
+import org.antlr.v4.runtime.tree.TerminalNodeImpl;
 import parse.antlr.Java8Parser;
 import parse.antlr.Java8ParserListener;
-import scala.reflect.internal.tpe.TypeToStrings;
-import scala.reflect.internal.util.NoPosition;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +17,7 @@ public class ParserListener implements Java8ParserListener {
     private JavaParseTreeWalker utilityWalker = new JavaParseTreeWalker(this); // BC: can be used for times when re-walking a statement is needed
     private Java8Parser parser;
     private Stack<Java8Parser.ForUpdateContext> forUpdates = new Stack<>();
-    private RuleContext NoPrint;// RC: Used to store the parent rule context of a branch you don't want to print
+    private boolean NoPrintSwitch;
     private String arrayType; // RC: Used to store the type of an array for the arrayCreationExpression rule
     private int arrayDimIndex = -1;
 
@@ -52,7 +51,7 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterLiteral(Java8Parser.LiteralContext ctx) {
-        if(!(NoPrint instanceof Java8Parser.DimExprContext)) {
+        //if(!(NoPrint instanceof Java8Parser.DimExprContext)) {
             String out = ctx.getText();
             if (out.equals("true")) {
                 out = "True";
@@ -64,7 +63,7 @@ public class ParserListener implements Java8ParserListener {
             }
 
             TranslationUnit.outputNoTab(out);
-        }
+        //}
     }
 
     @Override
@@ -357,18 +356,7 @@ public class ParserListener implements Java8ParserListener {
             out += '.';
         }
         out += ctx.Identifier().getText(); // RC removed trailing space here and individually added it to the required expressions to not effect output
-        if (!(NoPrint instanceof Java8Parser.ForUpdateContext)) {
-            if (!ctx.Identifier().getText().equals("length")) { // RC 10/26
-                TranslationUnit.outputNoTab(out);
-            }
-            else TranslationUnit.outputNoTab(")"); // RC 10/26 added these statements to account for a special situation of array length access
-        }
-/*
-        if (TranslationUnit.show().contains("[") && !TranslationUnit.show().contains("]")) {
-            String out = "]";
-            TranslationUnit.outputNoTab(out);
-        }
- */
+
     }
 
     @Override
@@ -1398,12 +1386,16 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterBlockStatements(Java8Parser.BlockStatementsContext ctx) {
-
+        if(ctx.parent instanceof Java8Parser.SwitchBlockStatementGroupContext){
+            TranslationUnit.enterScope();
+        }
     }
 
     @Override
     public void exitBlockStatements(Java8Parser.BlockStatementsContext ctx) {
-
+        if(ctx.parent instanceof Java8Parser.SwitchBlockStatementGroupContext){
+            TranslationUnit.exitScope();
+        }
     }
 
     @Override
@@ -1626,7 +1618,25 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterSwitchLabel(Java8Parser.SwitchLabelContext ctx) {
+        String out = "";
 
+        ParseTree StatementGroupCtxParent = ctx.parent.parent;
+        ParseTree BlockCtxParent = ctx.parent.parent.parent;
+        String SwitchStatementExpressionStr = ctx.parent.parent.parent.parent.getChild(2).getText();
+
+        if(StatementGroupCtxParent.equals(BlockCtxParent.getChild(1)) && ctx.getText().equals("default:")){
+            out = "if(True):\n";
+        }else {
+            if (!StatementGroupCtxParent.equals(BlockCtxParent.getChild(1))) {
+                out += "el";
+            }
+            if (!ctx.getText().equals("default:")) {
+                out += "if(" + SwitchStatementExpressionStr + " == ";
+            } else {
+                out += "se:\n";
+            }
+        }
+        TranslationUnit.outputWithTab(out);
     }
 
     @Override
@@ -1641,7 +1651,8 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void exitEnumConstantName(Java8Parser.EnumConstantNameContext ctx) {
-
+        String out = "):\n";
+        TranslationUnit.outputNoTab(out);
     }
 
     @Override
@@ -2289,8 +2300,9 @@ public class ParserListener implements Java8ParserListener {
     @Override
     public void enterDimExpr(Java8Parser.DimExprContext ctx) {
         String output = "";
-        NoPrint = ctx;
         /*
+        NoPrint = ctx;
+
         arrayDimIndex += 1;
         switch(arrayType){
             case "byte":
@@ -2321,10 +2333,12 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void exitDimExpr(Java8Parser.DimExprContext ctx) {
+        /*
         if(ctx.parent instanceof Java8Parser.DimExprsContext && ctx.parent.getChildCount() > 1 && arrayDimIndex < ctx.parent.getChildCount()-1) {
             TranslationUnit.outputNoTab("");
         }
         NoPrint = null;
+         */
     }
 
     @Override
@@ -2334,7 +2348,9 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void exitConstantExpression(Java8Parser.ConstantExpressionContext ctx) {
-
+        if(ctx.parent instanceof Java8Parser.SwitchLabelContext){
+            TranslationUnit.outputNoTab("):\n");
+        }
     }
 
     @Override
