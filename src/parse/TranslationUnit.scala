@@ -7,7 +7,6 @@ import parse.antlr.{Java8Lexer, Java8Parser}
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.nio.charset.StandardCharsets
-import scala.collection.convert.ImplicitConversions.`collection AsScalaIterable`
 
 // acts as a container for the ANTLR logics
 // this is likely very inefficient but it works for now
@@ -18,6 +17,11 @@ object TranslationUnit {
 
   def enterScope(): Unit = currentScope += 1
   def exitScope(): Unit = currentScope -= 1
+  def isParent(rule: RuleContext, compare: Java8Parser): Boolean = rule match {
+      case y: compare.type => true
+      case _ => false
+    }
+
 
   // internal representation of current parsing output
   private val stringBuilder = new StringBuilder()
@@ -37,8 +41,7 @@ object TranslationUnit {
 
     val error = ErrorListener.syntaxErrors().headOption
     val output = stringBuilder.mkString
-    val outputNoExtraLines = output.lines().toList.map(line => if(line.isBlank) "" else line + "\n").mkString
-    (outputNoExtraLines, error)
+    (output, error)
   }
 
   // just some useful string extension methods
