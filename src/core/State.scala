@@ -1,7 +1,7 @@
 package core
 
+import core.UIUtilities.primaryStageBuilder
 import io.ResourcePaths.MainScene
-import gui.UIUtilities.{createStage, primaryStageBuilder}
 import io.CodeFile
 import scalafx.application.JFXApp.PrimaryStage
 
@@ -14,5 +14,5 @@ case class State(javaCode: CodeFile = CodeFile(None, None),
 
 
 
-  val stage: PrimaryStage = createStage(MainScene)(primaryStageBuilder)
+//  val stage: PrimaryStage = createStage(MainScene)(primaryStageBuilder)
 }

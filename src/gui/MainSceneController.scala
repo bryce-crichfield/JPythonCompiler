@@ -1,8 +1,8 @@
 package gui
 
-import core.StateManager.{setJavaCode, translate, updateState}
-import core.{App, StateManager}
-import gui.UIUtilities.{openFileChooser, openOperation, saveFileChooser, showDialog}
+import core.StateManager
+import core.StateManager.{translate, updateState}
+import core.UIUtilities.showDialog
 import io.{CodeFile, IO}
 import javafx.application.Platform
 import javafx.scene.control.{MenuItem, TextArea}
@@ -20,28 +20,28 @@ class MainSceneController(JavaTextArea: TextArea, PythonTextArea: TextArea, save
 
   def saveOnClick(): Unit = {
     val text = Option(JavaTextArea.getText)
-    val file = StateManager.getJavaCode().file
+    val file = StateManager.getJavaCodeFile().file
     IO.saveCodeToFile(CodeFile.withString(file, text))
   }
 
   def saveAsOnClick(): Unit = {
-    saveFileChooser() match {
-      case Some(file) =>
-        val text = Option(JavaTextArea.getText)
-        val code = CodeFile.withString(Some(file), text)
-        updateState(setJavaCode(code))
-        IO.saveCodeToFile(code)
-        forceBinding()
-      case None => ()
-    }
+//    saveFileChooser() match {
+//      case Some(file) =>
+//        val text = Option(JavaTextArea.getText)
+//        val code = CodeFile.withString(Some(file), text)
+//        updateState(setJavaCode(code))
+//        IO.saveCodeToFile(code)
+//        forceBinding()
+//      case None => ()
+//    }
   }
 
   def openOnClick(): Unit = {
-    openFileChooser().flatMap(file => openOperation(file)) match {
-      case Some(code) => updateState(setJavaCode(code))
-      case None => ()
-    }
-    forceBinding()  // I really don't know why this is necessary, but it forces JFX to update
+//    openFileChooser().flatMap(file => openOperation(file)) match {
+//      case Some(code) => updateState(setJavaCode(code))
+//      case None => ()
+//    }
+//    forceBinding()  // I really don't know why this is necessary, but it forces JFX to update
   }
 
   def closeOnClick(): Unit = {
@@ -61,15 +61,15 @@ class MainSceneController(JavaTextArea: TextArea, PythonTextArea: TextArea, save
 
 
   private def setSaveMenuItemStatus(): Unit = {
-    val shouldEnable = StateManager.getJavaCode().file.isEmpty
+    val shouldEnable = StateManager.getJavaCodeFile().file.isEmpty
     saveMenuItem.setDisable(shouldEnable)
   }
 
   private def setTitle(): Unit = {
-    StateManager.getJavaCode().file match {
-      case Some(file) => App.getStage().setTitle(file.getName)
-      case None => ()
-    }
+//    StateManager.getJavaCode().file match {
+//      case Some(file) => App.getStage().setTitle(file.getName)
+//      case None => ()
+//    }
   }
 
   def translateOnClick(): Unit = {
@@ -95,8 +95,8 @@ class MainSceneController(JavaTextArea: TextArea, PythonTextArea: TextArea, save
   }
 
   private def forceBinding(): Unit = {
-    setFormattedText(JavaTextArea, StateManager.getJavaCode())
-    setFormattedText(PythonTextArea, StateManager.getPythonCode())
+    setFormattedText(JavaTextArea, StateManager.getJavaCodeFile())
+    setFormattedText(PythonTextArea, StateManager.getPythonCodeFile())
     JavaTextArea.setText(JavaTextArea.getText)
     PythonTextArea.setText(PythonTextArea.getText)
   }

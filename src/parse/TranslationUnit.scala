@@ -1,14 +1,10 @@
 package parse
 
-import org.antlr.v4.runtime.{CharStream, CharStreams, CommonTokenStream, RuleContext}
-import org.antlr.v4.runtime.tree.ParseTreeWalker
+import org.antlr.v4.runtime.{CharStream, CharStreams, CommonTokenStream}
 import parse.antlr.{Java8Lexer, Java8Parser}
 
 import java.io.ByteArrayInputStream
-import java.io.InputStream
 import java.nio.charset.StandardCharsets
-import java.util.stream.{Collector, Collectors}
-import scala.collection.convert.ImplicitConversions.`collection AsScalaIterable`
 import scala.collection.mutable.ListBuffer
 
 // acts as a container for the ANTLR logics

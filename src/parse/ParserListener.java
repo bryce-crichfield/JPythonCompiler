@@ -1,14 +1,13 @@
 package parse;
 
-import com.sun.marlin.DTransformingPathConsumer2D;
-import javafx.animation.TranslateTransition;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
-import org.antlr.v4.runtime.tree.*;
+import org.antlr.v4.runtime.tree.ErrorNode;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.TerminalNode;
+import org.antlr.v4.runtime.tree.TerminalNodeImpl;
 import parse.antlr.Java8Parser;
 import parse.antlr.Java8ParserListener;
-import scala.reflect.internal.tpe.TypeToStrings;
-import scala.reflect.internal.util.NoPosition;
 
 import java.util.ArrayList;
 import java.util.List;
