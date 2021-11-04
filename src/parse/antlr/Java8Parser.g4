@@ -170,7 +170,7 @@ typeBound
 
 additionalBound
 	:	'&' interfaceType
-	;primitive
+	;
 
 typeArguments
 	:	'<' typeArgumentList '>'
@@ -215,7 +215,7 @@ packageOrTypeName
 
 expressionName
 	:	Identifier
-	|	ambiguousName '.' Identifier    //idk???
+	|	ambiguousName '.' Identifier    //RC: member access
 	;
 
 methodName

@@ -1,19 +1,39 @@
 package parse;
 
-
 import com.sun.marlin.DTransformingPathConsumer2D;
+import javafx.animation.TranslateTransition;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
-import org.antlr.v4.runtime.tree.ErrorNode;
-import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.TerminalNode;
+import org.antlr.v4.runtime.tree.*;
 import parse.antlr.Java8Parser;
 import parse.antlr.Java8ParserListener;
+import scala.reflect.internal.tpe.TypeToStrings;
+import scala.reflect.internal.util.NoPosition;
+
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 public class ParserListener implements Java8ParserListener {
-
+    private JavaParseTreeWalker utilityWalker = new JavaParseTreeWalker(this); // BC: can be used for times when re-walking a statement is needed
     private Java8Parser parser;
+    private Stack<Java8Parser.ForUpdateContext> forUpdates = new Stack<>();
+    private RuleContext NoPrint;// RC: Used to store the parent rule context of a branch you don't want to print
+    private String arrayType; // RC: Used to store the type of an array for the arrayCreationExpression rule
+    private int arrayDimIndex = -1;
+
+    private static ArrayList<RuleContext> getChildrenContexts(RuleContext ctx) {
+        int n = ctx.getChildCount();
+        ArrayList<RuleContext> children = new ArrayList<>();
+        for(int i = 0; i < n; i++) {
+            ParseTree childAsTree = ctx.getChild(i);
+            if(!(childAsTree instanceof TerminalNodeImpl)) {
+                children.add((RuleContext) childAsTree);
+            }
+        }
+        return children;
+    }
+
 
     public ParserListener(Java8Parser parser) {
         this.parser = parser;
@@ -32,15 +52,19 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterLiteral(Java8Parser.LiteralContext ctx) {
-        String out = ctx.getText();
+        if(!(NoPrint instanceof Java8Parser.DimExprContext)) {
+            String out = ctx.getText();
+            if (out.equals("true")) {
+                out = "True";
+            } else if (out.equals("false")) {
+                out = "False";
+            }
+            if ((ctx.IntegerLiteral() != null || ctx.FloatingPointLiteral() != null) && ctx.getText().charAt(ctx.getText().length() - 1) > 57) {
+                out = out.substring(0, ctx.getText().length() - 1);
+            }
 
-        if(out.equals("true")) {out = "True";}
-        else if(out.equals("false")) {out = "False";}
-        if((ctx.IntegerLiteral() != null || ctx.FloatingPointLiteral() != null) && ctx.getText().charAt(ctx.getText().length() - 1) > 57) {
-            out = out.substring(0, ctx.getText().length() - 1);
+            TranslationUnit.outputNoTab(out);
         }
-
-        TranslationUnit.outputNoTab(out);
     }
 
     @Override
@@ -320,18 +344,31 @@ public class ParserListener implements Java8ParserListener {
 
     @Override   // have not included ambig. defn.
     public void enterExpressionName(Java8Parser.ExpressionNameContext ctx) {
-        String out = "";
-        out += ctx.Identifier().getText(); // RC removed trailing space here and individually added it to the required expressions to not effect output
-        TranslationUnit.outputNoTab(out);
+        if (ctx.Identifier().getText().equals("println")){
+            TranslationUnit.outputNoTab("print(");
+        }
+
     }
 
     @Override
     public void exitExpressionName(Java8Parser.ExpressionNameContext ctx) {
-
+        String out = "";
+        if(ctx.getChildCount() > 1){
+            out += '.';
+        }
+        out += ctx.Identifier().getText(); // RC removed trailing space here and individually added it to the required expressions to not effect output
+        if (!(NoPrint instanceof Java8Parser.ForUpdateContext)) {
+            if (!ctx.Identifier().getText().equals("println")) { // RC 10/26
+                TranslationUnit.outputNoTab(out);
+            }
+            else TranslationUnit.outputNoTab(")"); // RC 10/26 added these statements to account for a special situation of array length access
+        }
+/*
         if (TranslationUnit.show().contains("[") && !TranslationUnit.show().contains("]")) {
             String out = "]";
             TranslationUnit.outputNoTab(out);
         }
+ */
     }
 
     @Override
@@ -346,7 +383,13 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterAmbiguousName(Java8Parser.AmbiguousNameContext ctx) {
-
+        String output = ctx.Identifier().getText();
+        if(ctx.getChildCount() > 1){
+            TranslationUnit.outputNoTab("." + output);
+        }
+        else{
+            TranslationUnit.outputNoTab(output);
+        } // RC member access
     }
 
     @Override
@@ -622,11 +665,19 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterVariableInitializer(Java8Parser.VariableInitializerContext ctx) {
+        if(ctx.parent instanceof Java8Parser.VariableInitializerListContext) {
+            arrayDimIndex += 1;
+            if(arrayDimIndex != 0) arrayDimIndex += 1;
+          //  TranslationUnit.outputNoTab(arrayDimIndex + ": "); // debug statement
+        }
     }
 
     @Override
     public void exitVariableInitializer(Java8Parser.VariableInitializerContext ctx) {
 
+        if(ctx.parent instanceof Java8Parser.VariableInitializerListContext && arrayDimIndex < ctx.parent.getChildCount()-1) {
+            TranslationUnit.outputNoTab(", ");
+        }
     }
 
     @Override
@@ -1307,22 +1358,25 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterArrayInitializer(Java8Parser.ArrayInitializerContext ctx) {
-
+        String output = "[";
+        TranslationUnit.outputNoTab(output);
     }
 
     @Override
     public void exitArrayInitializer(Java8Parser.ArrayInitializerContext ctx) {
-
+        String output = "]";
+        TranslationUnit.outputNoTab(output);
     }
 
     @Override
     public void enterVariableInitializerList(Java8Parser.VariableInitializerListContext ctx) {
-
+       // TranslationUnit.outputNoTab("Children:  " + ctx.getChildCount()); // debug statement
+        arrayDimIndex = -1;
     }
 
     @Override
     public void exitVariableInitializerList(Java8Parser.VariableInitializerListContext ctx) {
-
+        arrayDimIndex = -1;
     }
 
     @Override
@@ -1332,12 +1386,13 @@ public class ParserListener implements Java8ParserListener {
 
         if(ctx.blockStatements() == null) {
             TranslationUnit.outputWithTab("pass\n");
-        }
+        } //TQ
     }
 
     @Override
     public void exitBlock(Java8Parser.BlockContext ctx) {
         // causes scope decrease
+        // might be able to new line here but idk if that would help
         TranslationUnit.exitScope();
     }
 
@@ -1386,9 +1441,9 @@ public class ParserListener implements Java8ParserListener {
         //System.out.println("enterStatement");
         String out;
         if(ctx.parent instanceof Java8Parser.IfThenElseStatementContext) {
-            if(ctx.getChild(0) instanceof Java8Parser.IfThenElseStatementContext || ctx.getChild(0) instanceof Java8Parser.IfThenStatementContext || ctx.getChild(0) instanceof Java8Parser.IfThenElseStatementNoShortIfContext) {
+            if (ctx.getChild(0) instanceof Java8Parser.IfThenElseStatementContext || ctx.getChild(0) instanceof Java8Parser.IfThenStatementContext || ctx.getChild(0) instanceof Java8Parser.IfThenElseStatementNoShortIfContext) {
                 out = "el";
-            }else {
+            } else {
                 out = "else:\n";
             }
             TranslationUnit.outputWithTab(out);
@@ -1484,6 +1539,7 @@ public class ParserListener implements Java8ParserListener {
     @Override
     public void exitIfThenStatement(Java8Parser.IfThenStatementContext ctx) {
         String out = "\n";
+//        String out = "";
         TranslationUnit.outputWithTab(out);
     }
 
@@ -1501,6 +1557,7 @@ public class ParserListener implements Java8ParserListener {
     @Override
     public void exitIfThenElseStatement(Java8Parser.IfThenElseStatementContext ctx) {
         String out = "\n";
+//        String out = "";
         TranslationUnit.outputWithTab(out);
     }
 
@@ -1512,7 +1569,8 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void exitIfThenElseStatementNoShortIf(Java8Parser.IfThenElseStatementNoShortIfContext ctx) {
-        String out = "\n";
+//        String out = "\n";
+        String out = "";
         TranslationUnit.outputWithTab(out);
     }
 
@@ -1588,7 +1646,8 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterWhileStatement(Java8Parser.WhileStatementContext ctx) {
-
+        String out = "while ";
+        TranslationUnit.outputWithTab(out);
     }
 
     @Override
@@ -1638,12 +1697,18 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterBasicForStatement(Java8Parser.BasicForStatementContext ctx) {
-
+        // BC: for now I am assuming that a forStatement always has a forUpdate
+        Java8Parser.ForUpdateContext forUpdate = (Java8Parser.ForUpdateContext) getChildrenContexts(ctx)
+                .stream()
+                .filter(c -> c instanceof Java8Parser.ForUpdateContext)
+                .findFirst()
+                .get();
+        forUpdates.push(forUpdate); // BC : used so the continue statement has access to the forUpdate context
     }
 
     @Override
     public void exitBasicForStatement(Java8Parser.BasicForStatementContext ctx) {
-
+        forUpdates.pop();
     }
 
     @Override
@@ -1668,12 +1733,14 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterForUpdate(Java8Parser.ForUpdateContext ctx) {
-
+        TranslationUnit.enterScope(); // BC: this forces the update statement to maintain tabbing as though it were a block statement
+        TranslationUnit.outputWithTab(""); // BC: this will force tabs to be inserted
     }
 
     @Override
     public void exitForUpdate(Java8Parser.ForUpdateContext ctx) {
-
+        TranslationUnit.outputNoTab("\n"); // BC: just make sure we newline and scope out and TU will handle tabbing
+        TranslationUnit.exitScope();
     }
 
     @Override
@@ -1708,17 +1775,20 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterBreakStatement(Java8Parser.BreakStatementContext ctx) {
-
+        TranslationUnit.outputWithTab("pass");
     }
 
     @Override
     public void exitBreakStatement(Java8Parser.BreakStatementContext ctx) {
-
+        TranslationUnit.outputNoTab("\n");
     }
 
     @Override
     public void enterContinueStatement(Java8Parser.ContinueStatementContext ctx) {
-
+        TranslationUnit.exitScope();        // BC: we need to manage the exit and enter scope for this special case
+        utilityWalker.walk(forUpdates.peek()); // BC: walk to the forUpdate at the top of the stack, but don't pop in-case other continue statements exist in scope
+        TranslationUnit.enterScope();       // BC: popping is handled at the level of exiting the basicForStatement
+        TranslationUnit.outputWithTab("continue");
     }
 
     @Override
@@ -1998,7 +2068,6 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterFieldAccess(Java8Parser.FieldAccessContext ctx) {
-
     }
 
     @Override
@@ -2008,7 +2077,6 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterFieldAccess_lf_primary(Java8Parser.FieldAccess_lf_primaryContext ctx) {
-
     }
 
     @Override
@@ -2018,7 +2086,6 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterFieldAccess_lfno_primary(Java8Parser.FieldAccess_lfno_primaryContext ctx) {
-
     }
 
     @Override
@@ -2127,58 +2194,137 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterArrayCreationExpression(Java8Parser.ArrayCreationExpressionContext ctx) {
-        String output = "[";
+        String output = "";
+        arrayType = ctx.getChild(1).getText();
+        /*
         switch (ctx.getChild(1).getText())
         {
             case "byte":
             case "short":
             case "int":
-                output += "0] * ";
+                output += "[0] * ";
                 break;
             case "boolean":
-                output += "False] * ";
+                output += "[False] * ";
                 break;
             case "long":
-                output += "0L] * ";
+                output += "[0L] * ";
             case "double":
             case "float":
-                output += "0.0] * ";
+                output += "[0.0] * ";
                 break;
             case "char":
-                output += "''] * ";
+                output += "[''] * ";
                 break;
             default: output += "[] * ";
         }
+
+        //RC
         TranslationUnit.outputNoTab(output);
+        */
     }
     //Moved the definition from enterDimExprs to here because it was cleaner
-    //added switch statement to detect for all primitive and boolean types and keep with
+    //added switch statement to detect for all primitive and boolean types and keep
     //explicit declaration of type to match Java
     //RC
 
     @Override
     public void exitArrayCreationExpression(Java8Parser.ArrayCreationExpressionContext ctx) {
-
+        arrayType = null;
     }
 
     @Override
     public void enterDimExprs(Java8Parser.DimExprsContext ctx) {
-
+        //This rule only gets called from ArrayCreationExpression
+        String output = "";
+        int first;
+        int second;
+        if (ctx.getChildCount() > 1) {
+            first = Integer.parseInt(ctx.getChild(0).getChild(1).getText());
+            second = Integer.parseInt(ctx.getChild(1).getChild(1).getText());
+            output += "[";
+        }
+        else {
+            first = 1;
+            second = Integer.parseInt(ctx.getChild(0).getChild(1).getText());
+        }
+        for(int i = 0; i < first; i++){
+            switch(arrayType) {
+                case "byte":
+                case "short":
+                case "int":
+                    output += "[0] * ";
+                    break;
+                case "boolean":
+                    output += "[False] * ";
+                    break;
+                case "long":
+                    output += "[0L] * ";
+                case "double":
+                case "float":
+                    output += "[0.0] * ";
+                    break;
+                case "char":
+                    output += "[''] * ";
+                    break;
+                default:
+                    output += "[] * ";
+            }
+            output += second;
+            if(i != first-1)
+                output += ", ";
+        }
+        TranslationUnit.outputNoTab(output);
     }
 
     @Override
     public void exitDimExprs(Java8Parser.DimExprsContext ctx) {
+        if(ctx.getChildCount() > 1){
+            TranslationUnit.outputNoTab("]");
+            arrayDimIndex = -1;
+        }
 
     }
 
     @Override
     public void enterDimExpr(Java8Parser.DimExprContext ctx) {
+        String output = "";
+        NoPrint = ctx;
+        /*
+        arrayDimIndex += 1;
+        switch(arrayType){
+            case "byte":
+            case "short":
+            case "int":
+                output += "[0] * ";
+                break;
+            case "boolean":
+                output += "[False] * ";
+                break;
+            case "long":
+                output += "[0L] * ";
+            case "double":
+            case "float":
+                output += "[0.0] * ";
+                break;
+            case "char":
+                output += "[''] * ";
+                break;
+            default: output += "[] * ";
 
+
+        }
+        TranslationUnit.outputNoTab(output);
+
+         */
     }
 
     @Override
     public void exitDimExpr(Java8Parser.DimExprContext ctx) {
-
+        if(ctx.parent instanceof Java8Parser.DimExprsContext && ctx.parent.getChildCount() > 1 && arrayDimIndex < ctx.parent.getChildCount()-1) {
+            TranslationUnit.outputNoTab("");
+        }
+        NoPrint = null;
     }
 
     @Override
@@ -2198,6 +2344,11 @@ public class ParserListener implements Java8ParserListener {
             out = "[";
             TranslationUnit.outputNoTab(out);
         }
+        else if (ctx.parent instanceof Java8Parser.BasicForStatementContext) {
+            out = "while ";
+            TranslationUnit.outputWithTab(out);
+        } //
+
     }
 
     @Override
@@ -2208,7 +2359,12 @@ public class ParserListener implements Java8ParserListener {
         else if (ctx.parent instanceof Java8Parser.ArrayAccessContext || ctx.parent instanceof Java8Parser.ArrayAccess_lfno_primaryContext) {
             String out = "]";
             TranslationUnit.outputNoTab(out);
+            //RC
         }
+        else if (ctx.parent instanceof Java8Parser.BasicForStatementContext || ctx.parent instanceof Java8Parser.WhileStatementContext) {
+            TranslationUnit.outputNoTab(":\n");
+        }
+
     }
 
     @Override
@@ -2311,6 +2467,10 @@ public class ParserListener implements Java8ParserListener {
         if(ctx.parent instanceof Java8Parser.ConditionalOrExpressionContext) {
             TranslationUnit.outputNoTab(" or ");
         }
+        else if (ctx.parent instanceof Java8Parser.BasicForStatementContext) {
+            TranslationUnit.outputNoTab("\n");
+        }
+
     }
 
     @Override
@@ -2442,9 +2602,9 @@ public class ParserListener implements Java8ParserListener {
         String out;
         if(ctx.unaryExpression() != null) {
             if(ctx.getChild(0).getText().equals("-")){
-                out = " -";
+                out = "-";
             }else {
-                out = " +";
+                out = "+";
             }
             TranslationUnit.outputNoTab(out);
         }
@@ -2462,17 +2622,17 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void exitPreIncrementExpression(Java8Parser.PreIncrementExpressionContext ctx) {
-
+        TranslationUnit.outputNoTab("+1");
     }
 
     @Override
     public void enterPreDecrementExpression(Java8Parser.PreDecrementExpressionContext ctx) {
-        TranslationUnit.outputNoTab("--");
+
     }
 
     @Override
     public void exitPreDecrementExpression(Java8Parser.PreDecrementExpressionContext ctx) {
-
+        TranslationUnit.outputNoTab("-1");
     }
 
     @Override
@@ -2505,7 +2665,8 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void exitPostIncrementExpression(Java8Parser.PostIncrementExpressionContext ctx) {
-        TranslationUnit.outputNoTab("++");
+
+        TranslationUnit.outputNoTab(" += 1");
     }
 
     @Override
@@ -2525,7 +2686,7 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void exitPostDecrementExpression(Java8Parser.PostDecrementExpressionContext ctx) {
-        TranslationUnit.outputNoTab("--");
+        TranslationUnit.outputNoTab(" -= 1");
     }
 
     @Override
