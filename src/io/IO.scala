@@ -14,7 +14,6 @@ object IO {
   object FileError {
     def asFailure[A](msg: String): Failure[A] = Failure(FileError(msg))
   }
-  private def fromPath(path: String): Try[File] = Try(new File(path))
   private def verifyFileType(file: File): Try[File] = {
     if(file.getName.takeRight(4).equals("java")) Success(file)
     else FileError.asFailure("Wrong File Extension - Please Only Choose a .java File!")
@@ -25,14 +24,6 @@ object IO {
     source.close()
     raw
   }
-
-
-  // Given a title of an FXMl, will attempt to load the FXML as a URL
-  def loadFXML(title: String): Try[URL] = Try {
-    val pathToResource = s"/$title.fxml"
-    IO.getClass.getResource(pathToResource)
-  }
-
 
   def loadFile(file: File): Try[List[String]] = {
     for {
