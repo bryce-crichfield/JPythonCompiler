@@ -1,11 +1,9 @@
 package core
 
-import scalafx.Includes._
 import scalafx.application.JFXApp
 import scalafx.beans.property.StringProperty
 import scalafx.scene.Scene
 import scalafx.scene.control.{MenuButton, MenuItem, SeparatorMenuItem, TextArea}
-import scalafx.scene.input.KeyEvent
 import scalafx.scene.layout.{AnchorPane, HBox, VBox}
 
 class MainStage extends JFXApp.PrimaryStage with MainStageController {
@@ -47,7 +45,6 @@ class MainStage extends JFXApp.PrimaryStage with MainStageController {
   val javaTextArea: TextArea = new TextArea {
     prefWidth = 690; prefHeight = 200;
     style = "-fx-font-family: monospace"
-    onKeyPressed = (e: KeyEvent) => textArea_Java_OnKeyPressed(e)
   }
 
   val pythonTextArea: TextArea = new TextArea {
