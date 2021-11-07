@@ -9,12 +9,11 @@ scalacOptions ++= Seq("-unchecked", "-deprecation", "-Xcheckinit", "-encoding", 
 
 // libraries
 val scalaFX =   "org.scalafx" %% "scalafx" % "16.0.0-R22"
-val scalaFXMl = "org.scalafx" %% "scalafxml-core-sfx8" % "0.5"
 val antlr =     "org.antlr" % "antlr4-runtime" % "4.7.2"
 
 
 resourceDirectory in Compile := (scalaSource in Compile).value
-libraryDependencies ++= Seq(scalaFX, scalaFXMl, antlr)
+libraryDependencies ++= Seq(scalaFX, antlr)
 
 // Add OS specific JavaFX dependencies
 val javafxModules = Seq("base", "controls", "fxml", "graphics", "media", "swing", "web")

@@ -14,32 +14,23 @@ object IO {
   object FileError {
     def asFailure[A](msg: String): Failure[A] = Failure(FileError(msg))
   }
-
-  def loadResource(path: String): URL = {
-    getClass.getResource(path)
-  }
-
   private def verifyFileType(file: File): Try[File] = {
     if(file.getName.takeRight(4).equals("java")) Success(file)
     else FileError.asFailure("Wrong File Extension - Please Only Choose a .java File!")
   }
-
-  private def loadSource(file: File): Try[BufferedSource] = {
-      verifyFileType(file) match {
-        case Success(file) => Try(Source.fromFile(file))
-        case Failure(error: FileError) => FileError.asFailure(error.msg)
-      }
+  private def loadSource(file: File): Try[BufferedSource] = Try(Source.fromFile(file))
+  private def readSource(source: BufferedSource): Try[List[String]] = Try {
+    val raw = source.getLines().toList
+    source.close()
+    raw
   }
 
-  def readFile(file: File): Try[List[String]] = {
-    loadSource(file) match {
-      case Success(source) =>
-        val raw = source.getLines().toList
-        source.close()
-        Success(raw)
-      case Failure(error: FileError) => FileError.asFailure(error.msg)
-      case Failure(_) => FileError.asFailure("Failed to Load Source")
-    }
+  def loadFile(file: File): Try[List[String]] = {
+    for {
+      verify <- verifyFileType(file)
+      load <- loadSource(verify)
+      read <- readSource(load)
+    } yield read
   }
 
   // the way this currently works, is it will simply write a new file then
