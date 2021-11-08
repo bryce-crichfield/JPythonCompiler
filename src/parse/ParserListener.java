@@ -17,7 +17,7 @@ public class ParserListener implements Java8ParserListener {
     private JavaParseTreeWalker utilityWalker = new JavaParseTreeWalker(this); // BC: can be used for times when re-walking a statement is needed
     private Java8Parser parser;
     private Stack<Java8Parser.ForUpdateContext> forUpdates = new Stack<>();
-    private boolean NoPrintSwitch;
+    private boolean NoPrintSwitch = false;
     private String arrayType; // RC: Used to store the type of an array for the arrayCreationExpression rule
     private int arrayDimIndex = -1;
 
@@ -343,10 +343,22 @@ public class ParserListener implements Java8ParserListener {
 
     @Override   // have not included ambig. defn.
     public void enterExpressionName(Java8Parser.ExpressionNameContext ctx) {
-        if (ctx.Identifier().getText().equals("length")){
-            TranslationUnit.outputNoTab("len(");
-        }
+        String out = "";
 
+        if (ctx.Identifier().getText().equals("length")) {
+           out = "len(";
+        }
+        if(!NoPrintSwitch) {
+            out = ctx.getText();
+        }else {
+            NoPrintSwitch = false; //Reset flag
+        }
+        if(ctx.parent.parent instanceof Java8Parser.PostIncrementExpressionContext || ctx.parent.parent instanceof Java8Parser.PostDecrementExpressionContext){
+            //TQ: Is it pretty and clean? No. Is it the simplest and most intuitive? Yes.
+            TranslationUnit.outputWithTab(out);
+        }else {
+            TranslationUnit.outputNoTab(out);
+        }
     }
 
     @Override
@@ -495,11 +507,27 @@ public class ParserListener implements Java8ParserListener {
 
         List<Java8Parser.ClassBodyDeclarationContext> classMembers = ctx.classBody().classBodyDeclaration();
         for(int i = classMembers.size() - 1; i >= 0; i--){
-        //I think conventionally, Java main method is at bottom, like C/C++
             if(classMembers.get(i).classMemberDeclaration() != null){
                 if(classMembers.get(i).classMemberDeclaration().methodDeclaration() != null){
-                    if(classMembers.get(i).classMemberDeclaration().methodDeclaration().methodHeader().methodDeclarator().Identifier().getText().equals("main")){
-                        out = "Main = " + ctx.Identifier() + "()\nMain.main([])";
+                    Java8Parser.MethodDeclaratorContext mainMethodDeclarator = classMembers.get(i).classMemberDeclaration().methodDeclaration().methodHeader().methodDeclarator();
+                    if(mainMethodDeclarator.Identifier().getText().equals("main")){
+                        out = "Main = " + ctx.Identifier() + "()\nMain.main(";
+                        //TQ: Will add any empty list argument for each parameter of the main method
+                        //    This is to prevent the translated code from throwing errors, it is not expected to contribute to the functionality of the translated code
+                        if(mainMethodDeclarator.formalParameterList() != null) {
+                            if(mainMethodDeclarator.formalParameterList().formalParameters() != null) {
+                                for(int paramCnt = (int) mainMethodDeclarator.formalParameterList()
+                                                                             .formalParameters()
+                                                                             .children
+                                                                             .stream()
+                                                                             .filter(p -> !p.getText().equals(","))
+                                                                             .count(); paramCnt > 0; paramCnt--) {
+                                    out += "[],";
+                                }
+                            }
+                            out += "[]"; //lastFormalParameter
+                        }
+                        out += ")";
                     }
                 }
             }
@@ -1578,7 +1606,7 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterSwitchStatement(Java8Parser.SwitchStatementContext ctx) {
-
+        NoPrintSwitch = true; //Set flag
     }
 
     @Override
@@ -1745,7 +1773,7 @@ public class ParserListener implements Java8ParserListener {
     @Override
     public void enterForUpdate(Java8Parser.ForUpdateContext ctx) {
         TranslationUnit.enterScope(); // BC: this forces the update statement to maintain tabbing as though it were a block statement
-        TranslationUnit.outputWithTab(""); // BC: this will force tabs to be inserted
+        //TranslationUnit.outputWithTab(""); // BC: this will force tabs to be inserted
     }
 
     @Override
@@ -1786,7 +1814,9 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterBreakStatement(Java8Parser.BreakStatementContext ctx) {
-        TranslationUnit.outputWithTab("pass");
+        if(!(ctx.parent.parent.parent.parent.parent instanceof Java8Parser.SwitchBlockStatementGroupContext)) {
+            TranslationUnit.outputWithTab("break");
+        }
     }
 
     @Override
@@ -2263,18 +2293,18 @@ public class ParserListener implements Java8ParserListener {
             switch(arrayType) {
                 case "byte":
                 case "short":
+                case "long":
                 case "int":
                     output += "[0] * ";
                     break;
                 case "boolean":
                     output += "[False] * ";
                     break;
-                case "long":
-                    output += "[0L] * ";
                 case "double":
                 case "float":
                     output += "[0.0] * ";
                     break;
+                case "String":
                 case "char":
                     output += "[''] * ";
                     break;
@@ -2682,7 +2712,7 @@ public class ParserListener implements Java8ParserListener {
     @Override
     public void exitPostIncrementExpression(Java8Parser.PostIncrementExpressionContext ctx) {
 
-        TranslationUnit.outputNoTab(" += 1");
+        TranslationUnit.outputNoTab(" += 1\n");
     }
 
     @Override
