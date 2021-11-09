@@ -9,7 +9,8 @@ case class CodeFile(file: Option[File], raw: Option[List[String]]) {
 
   def asString(): String = {
     raw match {
-      case Some(lines) => lines.mkString
+      case Some(lines) =>
+        lines.foldLeft("")((sum, l) => sum + l + "\n")
       case None => ""
     }
   }

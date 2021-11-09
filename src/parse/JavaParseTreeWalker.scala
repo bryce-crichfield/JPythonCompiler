@@ -1,11 +1,10 @@
 package parse
 
 import org.antlr.v4.runtime.ParserRuleContext
-import org.antlr.v4.runtime.tree.{ErrorNode, ParseTree, ParseTreeListener, RuleNode, TerminalNode, TerminalNodeImpl}
-import parse.antlr.Java8Parser
+import org.antlr.v4.runtime.tree._
 import parse.antlr.Java8Parser._
 
-class JavaParseTreeWalker(private val listener: ParseTreeListener) {
+class JavaParseTreeWalker(private val listener: ParserListener) {
 
   // [ CUSTOM WALK TEMPLATE SIGNATURE ]
   // private def customWalk(implicit children: List[ParseTree]): Unit =

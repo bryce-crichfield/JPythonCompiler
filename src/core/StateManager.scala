@@ -2,17 +2,19 @@ package core
 
 import io.CodeFile
 import parse.{SyntaxError, TranslationUnit}
+import scalafx.beans.property.StringProperty
 
 object StateManager {
 
-  private var currentState: State = _
-
+  private var currentState: State = State(CodeFile(None, None), CodeFile(None, None))
   def state(): State = currentState
+
+  val pythonOutput = StringProperty(getPythonCodeFile().asString())
 
 
   def updateState(state: State): Unit = {
     currentState = state
-    App.setStage(state.stage)
+    pythonOutput.update(currentState.pythonCode.asString())
   }
 
   // TODO: Refactor the matching logic
@@ -24,14 +26,14 @@ object StateManager {
     }
   }
 
-  def getJavaCode(): CodeFile = {
+  def getJavaCodeFile(): CodeFile = {
     currentState match {
       case s: State => s.javaCode
       case _ => CodeFile(None, None)
     }
   }
 
-  def getPythonCode(): CodeFile = {
+  def getPythonCodeFile(): CodeFile = {
     currentState match {
       case s: State => s.pythonCode
       case _ => CodeFile(None, None)
