@@ -354,7 +354,6 @@ public class ParserListener implements Java8ParserListener {
             NoPrintSwitch = false; //Reset flag
         }
         if(ctx.parent.parent instanceof Java8Parser.PostIncrementExpressionContext || ctx.parent.parent instanceof Java8Parser.PostDecrementExpressionContext){
-            //TQ: Is it pretty and clean? No. Is it the simplest and most intuitive? Yes.
             TranslationUnit.outputWithTab(out);
         }else {
             TranslationUnit.outputNoTab(out);
@@ -368,7 +367,7 @@ public class ParserListener implements Java8ParserListener {
             out += '.';
         }
         out += ctx.Identifier().getText(); // RC removed trailing space here and individually added it to the required expressions to not effect output
-
+        //TranslationUnit.outputNoTab(out);
     }
 
     @Override
