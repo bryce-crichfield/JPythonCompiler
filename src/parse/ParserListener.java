@@ -1,5 +1,6 @@
 package parse;
 
+import com.sun.marlin.DTransformingPathConsumer2D;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
@@ -8,13 +9,14 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.antlr.v4.runtime.tree.TerminalNodeImpl;
 import parse.antlr.Java8Parser;
 import parse.antlr.Java8ParserListener;
+import scala.reflect.internal.tpe.TypeToStrings;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
 public class ParserListener implements Java8ParserListener {
-    private JavaParseTreeWalker utilityWalker = new JavaParseTreeWalker(this); // BC: can be used for times when re-walking a statement is needed
+
     private Java8Parser parser;
     private Stack<Java8Parser.ForUpdateContext> forUpdates = new Stack<>();
     private RuleContext NoPrint;// RC: Used to store the parent rule context of a branch you don't want to print
@@ -1797,7 +1799,8 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterReturnStatement(Java8Parser.ReturnStatementContext ctx) {
-
+        String out = "return " + ctx.expression().getText();
+        TranslationUnit.outputWithTab(out);
     }
 
     @Override
@@ -1827,7 +1830,8 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterTryStatement(Java8Parser.TryStatementContext ctx) {
-
+    String out = "try:\n";
+    TranslationUnit.outputWithTab(out);
     }
 
     @Override
@@ -1837,7 +1841,8 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterCatches(Java8Parser.CatchesContext ctx) {
-
+    String out = "except:\n";
+    TranslationUnit.outputWithTab(out);
     }
 
     @Override
@@ -1877,7 +1882,8 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterFinally_(Java8Parser.Finally_Context ctx) {
-
+    String out = "finally:\n";
+    TranslationUnit.outputWithTab(out);
     }
 
     @Override
@@ -2067,6 +2073,7 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterFieldAccess(Java8Parser.FieldAccessContext ctx) {
+
     }
 
     @Override
@@ -2076,6 +2083,7 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterFieldAccess_lf_primary(Java8Parser.FieldAccess_lf_primaryContext ctx) {
+
     }
 
     @Override
@@ -2085,6 +2093,7 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterFieldAccess_lfno_primary(Java8Parser.FieldAccess_lfno_primaryContext ctx) {
+
     }
 
     @Override
@@ -2201,23 +2210,22 @@ public class ParserListener implements Java8ParserListener {
             case "byte":
             case "short":
             case "int":
-                output += "[0] * ";
+                output += "0] * ";
                 break;
             case "boolean":
-                output += "[False] * ";
+                output += "False] * ";
                 break;
             case "long":
-                output += "[0L] * ";
+                output += "0L] * ";
             case "double":
             case "float":
-                output += "[0.0] * ";
+                output += "0.0] * ";
                 break;
             case "char":
-                output += "[''] * ";
+                output += "''] * ";
                 break;
             default: output += "[] * ";
         }
-
         //RC
         TranslationUnit.outputNoTab(output);
         */
@@ -2346,7 +2354,7 @@ public class ParserListener implements Java8ParserListener {
         else if (ctx.parent instanceof Java8Parser.BasicForStatementContext) {
             out = "while ";
             TranslationUnit.outputWithTab(out);
-        } //
+        }
 
     }
 
