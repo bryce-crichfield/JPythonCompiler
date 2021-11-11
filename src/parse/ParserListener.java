@@ -145,7 +145,14 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterClassType_lf_classOrInterfaceType(Java8Parser.ClassType_lf_classOrInterfaceTypeContext ctx) {
-
+        TranslationUnit.outputNoTab(".");
+        if (!ctx.annotation().isEmpty()){
+            utilityWalker.walk(ctx.getChild(1));
+        }
+        TranslationUnit.outputNoTab(ctx.Identifier().getText());
+        if (ctx.typeArguments() != null){
+            utilityWalker.walk(ctx.getChild(ctx.getChildCount()-1));
+        }
     }
 
     @Override
@@ -155,7 +162,14 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterClassType_lfno_classOrInterfaceType(Java8Parser.ClassType_lfno_classOrInterfaceTypeContext ctx) {
+        if (!ctx.annotation().isEmpty()){
+            utilityWalker.walk(ctx.getChild(0));
+        }
+        TranslationUnit.outputNoTab(ctx.Identifier().getText());
+        if (ctx.typeArguments() != null){
 
+            utilityWalker.walk(ctx.getChild(ctx.getChildCount()-1));
+        }
     }
 
     @Override
@@ -330,8 +344,17 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void exitTypeName(Java8Parser.TypeNameContext ctx) {
+        if(ctx.parent instanceof Java8Parser.MethodInvocationContext){
+            String output = ctx.Identifier().getText();
+          /*  if (!(ctx.parent.getChild(2) instanceof Java8Parser.TypeArgumentsContext)){
+                output += '.';
+            }
 
-    }
+           */
+
+            TranslationUnit.outputNoTab(output);
+        }
+    } // RC: Method Invocation printing
 
     @Override
     public void enterPackageOrTypeName(Java8Parser.PackageOrTypeNameContext ctx) {
@@ -354,7 +377,15 @@ public class ParserListener implements Java8ParserListener {
     @Override
     public void exitExpressionName(Java8Parser.ExpressionNameContext ctx) {
         String out = "";
-        if(ctx.getChildCount() > 1){
+        if(ctx.parent instanceof Java8Parser.MethodInvocationContext){
+            String output = ctx.Identifier().getText();
+            if (!(ctx.parent.getChild(2) instanceof Java8Parser.TypeArgumentsContext)){
+                output += '.';
+            }
+
+            TranslationUnit.outputNoTab(output);
+        }
+        else if(ctx.getChildCount() > 1){
             out += '.';
         }
         out += ctx.Identifier().getText(); // RC removed trailing space here and individually added it to the required expressions to not effect output
@@ -374,28 +405,28 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterMethodName(Java8Parser.MethodNameContext ctx) {
+            TranslationUnit.outputNoTab(ctx.Identifier().getText());
 
     }
-
     @Override
     public void exitMethodName(Java8Parser.MethodNameContext ctx) {
-
-    }
+        //TranslationUnit.outputNoTab("(");
+    } //RC Method Invocation printing
 
     @Override
     public void enterAmbiguousName(Java8Parser.AmbiguousNameContext ctx) {
-        String output = ctx.Identifier().getText();
-        if(ctx.getChildCount() > 1){
-            TranslationUnit.outputNoTab("." + output);
-        }
-        else{
-            TranslationUnit.outputNoTab(output);
-        } // RC member access
+
     }
 
     @Override
     public void exitAmbiguousName(Java8Parser.AmbiguousNameContext ctx) {
-
+        String output = ctx.Identifier().getText();
+        if(ctx.getChildCount() > 1){
+            TranslationUnit.outputNoTab("." + output); //debug
+        }
+        else{
+            TranslationUnit.outputNoTab(output);
+        } // RC member access
     }
 
     @Override
@@ -1410,11 +1441,12 @@ public class ParserListener implements Java8ParserListener {
     @Override
     public void enterBlockStatement(Java8Parser.BlockStatementContext ctx) {
         //System.out.println("enterBlockStatement");
+       // TranslationUnit.outputWithTab("");
     }
 
     @Override
     public void exitBlockStatement(Java8Parser.BlockStatementContext ctx) {
-
+        TranslationUnit.outputNoTab("\n");
     }
 
     @Override
@@ -1449,6 +1481,10 @@ public class ParserListener implements Java8ParserListener {
             }
             TranslationUnit.outputWithTab(out);
         }
+//        else if (ctx.parent instanceof Java8Parser.BasicForStatementContext) {
+//            out = "\t" + forUpdates.pop() + "\n";
+//            TranslationUnit.outputWithTab(out);
+//        }
     }
 
     @Override
@@ -1523,7 +1559,6 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void exitStatementExpression(Java8Parser.StatementExpressionContext ctx) {
-
     }
 
     @Override
@@ -1787,7 +1822,9 @@ public class ParserListener implements Java8ParserListener {
     @Override
     public void enterContinueStatement(Java8Parser.ContinueStatementContext ctx) {
         TranslationUnit.exitScope();        // BC: we need to manage the exit and enter scope for this special case
-        utilityWalker.walk(forUpdates.peek()); // BC: walk to the forUpdate at the top of the stack, but don't pop in-case other continue statements exist in scope
+        if (forUpdates.size() > 0) {
+            utilityWalker.walk(forUpdates.peek()); // BC: walk to the forUpdate at the top of the stack, but don't pop in-case other continue statements exist in scope
+        }
         TranslationUnit.enterScope();       // BC: popping is handled at the level of exiting the basicForStatement
         TranslationUnit.outputWithTab("continue");
     }
@@ -2036,7 +2073,30 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterClassInstanceCreationExpression(Java8Parser.ClassInstanceCreationExpressionContext ctx) {
-
+        String output = "";
+        int ident = 0;
+        for(int i = 0; i < ctx.getChildCount(); i++){
+            switch (ctx.getChild(i).getText()){
+                case "new":
+                    //output += "new";
+                    break;
+                case ".":
+                    output += ".";
+                    break;
+                case "(":
+                    output += "(";
+                case ")":
+                    output += ")";
+                default:
+                    utilityWalker.walk(ctx.getChild(i));
+                    if (ctx.getChild(i) instanceof Java8Parser.AnnotationContext){
+                        output += ctx.Identifier(ident).getText();
+                        ident++;
+                        TranslationUnit.outputNoTab(output);
+                        output = "";
+                    }
+            }
+        }
     }
 
     @Override
@@ -2046,7 +2106,23 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterClassInstanceCreationExpression_lf_primary(Java8Parser.ClassInstanceCreationExpression_lf_primaryContext ctx) {
-
+        String output = "";
+        for(int i = 0; i < ctx.getChildCount(); i++){
+            switch (ctx.getChild(i).getText()){
+                case "new":
+                   // output += "new";
+                    break;
+                case ".":
+                    output += ".";
+                    break;
+                default:
+                    utilityWalker.walk(ctx.getChild(i));
+                    if (ctx.getChild(i) instanceof Java8Parser.AnnotationContext){
+                        output += ctx.Identifier().getText();
+                        TranslationUnit.outputNoTab(output);
+                    }
+            }
+        }
     }
 
     @Override
@@ -2056,8 +2132,37 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterClassInstanceCreationExpression_lfno_primary(Java8Parser.ClassInstanceCreationExpression_lfno_primaryContext ctx) {
-
-    }
+        String output = "";
+        int ident = 0;
+        for(int i = 0; i < ctx.getChildCount(); i++){
+            switch (ctx.getChild(i).getText()){
+                case "new":
+                    //TranslationUnit.outputNoTab("new ");\
+                   // output += "new ";
+                    if (ctx.typeArguments() == null && ctx.annotation().isEmpty())
+                    {
+                        //TranslationUnit.outputNoTab(ctx.Identifier().get(ident).getText());
+                        output += ctx.Identifier().get(ident).getText();
+                        ident++;
+                    }
+                    break;
+                case ".":
+                    output += ".";
+                    break;
+                case "(":
+                    output += "(";
+                    break;
+                case ")":
+                    output += ")";
+                    break;
+                default:
+                    TranslationUnit.outputNoTab(output);
+                    output = "";
+                    utilityWalker.walk(ctx.getChild(i));
+            }
+        } TranslationUnit.outputNoTab(output);
+    } // new ForEachLoop<Character>().setStuff(letters);
+    // possibility of multiple identifiers that need to be printed
 
     @Override
     public void exitClassInstanceCreationExpression_lfno_primary(Java8Parser.ClassInstanceCreationExpression_lfno_primaryContext ctx) {
@@ -2066,12 +2171,12 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterTypeArgumentsOrDiamond(Java8Parser.TypeArgumentsOrDiamondContext ctx) {
-
+        TranslationUnit.outputNoTab("<");
     }
 
     @Override
     public void exitTypeArgumentsOrDiamond(Java8Parser.TypeArgumentsOrDiamondContext ctx) {
-
+        TranslationUnit.outputNoTab(">");
     }
 
     @Override
@@ -2135,17 +2240,43 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterMethodInvocation(Java8Parser.MethodInvocationContext ctx) {
+        ArrayList<RuleContext> children = getChildrenContexts(ctx);
+        TranslationUnit.outputWithTab("");
+        String output = "";
+        for (int i = 0; i < ctx.getChildCount(); i++){
+            switch(ctx.getChild(i).getText()) {
+                case "super":
+                    output += "super";
+                    break;
+                case ".":
+                      output += ".";
+                    break;
+                case "(":
+                    if(ctx.Identifier() != null){
+                        output += ctx.Identifier().getText();
+                        TranslationUnit.outputNoTab(output);
+                    }
+                default:
+                    utilityWalker.walk(ctx.getChild(i));
+            }
+        }
 
     }
 
     @Override
     public void exitMethodInvocation(Java8Parser.MethodInvocationContext ctx) {
-
+        if (ctx.argumentList() == null){
+            TranslationUnit.outputNoTab("()");
+        }
     }
 
     @Override
     public void enterMethodInvocation_lf_primary(Java8Parser.MethodInvocation_lf_primaryContext ctx) {
-
+        TranslationUnit.outputNoTab(".");
+        if (ctx.typeArguments() == null){
+            TranslationUnit.outputNoTab(ctx.Identifier().getText());
+        }
+        else utilityWalker.walk(ctx.getChild(1));
     }
 
     @Override
@@ -2155,22 +2286,42 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterMethodInvocation_lfno_primary(Java8Parser.MethodInvocation_lfno_primaryContext ctx) {
+        String output = "";
+        for (int i = 0; i < ctx.getChildCount(); i++){
+            switch(ctx.getChild(i).getText()) {
+                case "super":
+                    output += "super";
+                    break;
+                case ".":
+                      output += ".";
+                    break;
+                default:
+                    if (ctx.getChild(i) instanceof Java8Parser.ArgumentListContext && ctx.Identifier() != null){
+                        output += ctx.Identifier().getText() + "";
+                        TranslationUnit.outputNoTab(output);
+                    }
+                    utilityWalker.walk(ctx.getChild(i));
+            }
+        }
+
 
     }
 
     @Override
     public void exitMethodInvocation_lfno_primary(Java8Parser.MethodInvocation_lfno_primaryContext ctx) {
-
+        if (ctx.argumentList() == null){
+            TranslationUnit.outputNoTab("()");
+        }
     }
 
     @Override
     public void enterArgumentList(Java8Parser.ArgumentListContext ctx) {
-
+        TranslationUnit.outputNoTab("(");
     }
 
     @Override
     public void exitArgumentList(Java8Parser.ArgumentListContext ctx) {
-
+        TranslationUnit.outputNoTab(")");
     }
 
     @Override
@@ -2681,7 +2832,9 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterPostIncrementExpression_lf_postfixExpression(Java8Parser.PostIncrementExpression_lf_postfixExpressionContext ctx) {
-
+        if (!(NoPrint instanceof Java8Parser.ForUpdateContext)) {
+            TranslationUnit.outputNoTab(" += 1");
+        }
     }
 
     @Override
@@ -2696,12 +2849,16 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void exitPostDecrementExpression(Java8Parser.PostDecrementExpressionContext ctx) {
-        TranslationUnit.outputNoTab(" -= 1");
+        if (!(NoPrint instanceof Java8Parser.ForUpdateContext)) {
+            TranslationUnit.outputNoTab(" -= 1");
+        }
     }
 
     @Override
     public void enterPostDecrementExpression_lf_postfixExpression(Java8Parser.PostDecrementExpression_lf_postfixExpressionContext ctx) {
-
+        if (!(NoPrint instanceof Java8Parser.ForUpdateContext)) {
+            TranslationUnit.outputNoTab(" -= 1");
+        }
     }
 
     @Override
