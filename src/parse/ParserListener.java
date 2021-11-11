@@ -408,6 +408,7 @@ public class ParserListener implements Java8ParserListener {
             TranslationUnit.outputNoTab(ctx.Identifier().getText());
 
     }
+
     @Override
     public void exitMethodName(Java8Parser.MethodNameContext ctx) {
         //TranslationUnit.outputNoTab("(");
@@ -1850,7 +1851,8 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterThrowStatement(Java8Parser.ThrowStatementContext ctx) {
-
+    String out = "raise ";
+    TranslationUnit.outputWithTab(out);
     }
 
     @Override
@@ -1881,7 +1883,7 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterCatches(Java8Parser.CatchesContext ctx) {
-    String out = "except:\n";
+        String out = "except " ;
     TranslationUnit.outputWithTab(out);
     }
 
@@ -1902,7 +1904,8 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterCatchFormalParameter(Java8Parser.CatchFormalParameterContext ctx) {
-
+        String out = ctx.variableDeclaratorId().getText() + ":\n";
+        TranslationUnit.outputNoTab(out);
     }
 
     @Override
