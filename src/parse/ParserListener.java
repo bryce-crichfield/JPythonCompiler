@@ -1799,7 +1799,10 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterReturnStatement(Java8Parser.ReturnStatementContext ctx) {
-        String out = "return " + ctx.expression().getText();
+        String out = "return ";
+        if(ctx.expression().getText().equals("this")){
+            out = out + "self";
+        }
         TranslationUnit.outputWithTab(out);
     }
 
