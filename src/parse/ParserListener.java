@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Stack;
 
 public class ParserListener implements Java8ParserListener {
-
+    private JavaParseTreeWalker utilityWalker = new JavaParseTreeWalker(this); // BC: can be used for times when re-walking a statement is needed
     private Java8Parser parser;
     private Stack<Java8Parser.ForUpdateContext> forUpdates = new Stack<>();
     private RuleContext NoPrint;// RC: Used to store the parent rule context of a branch you don't want to print
