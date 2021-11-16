@@ -33,7 +33,6 @@ trait MainStageController {
   def menuItem_Open_OnAction(): Unit = {
     for (choice <- openFileChooser()) yield openOperation(choice) match {
       case Some(code) =>
-        println("Updating state")
         updateState(setJavaCode(code))
         javaTextArea.setText(getJavaCodeFile().asString())
       case None => ()
@@ -47,7 +46,6 @@ trait MainStageController {
 
   def menuButton_Translate_OnAction(): Unit = {
     val input = javaTextArea.text.value
-    println(input)
     translate(input) match {
       case (s, None) => updateState(s)
       case (s, Some(error)) =>
