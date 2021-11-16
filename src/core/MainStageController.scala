@@ -19,6 +19,7 @@ trait MainStageController {
     val file = StateManager.getJavaCodeFile().file
     IO.saveCodeToFile(CodeFile.withString(file, text))
   }
+
   def menuItem_SaveAs_OnAction(): Unit = {
     saveFileChooser() match {
       case Some(file) =>
@@ -73,7 +74,6 @@ trait MainStageController {
     }
   }
 
-  // requires the current stage/window so that it can maintain correct parent/child ownership
   def openFileChooser(window: Window = App.stage): Option[File] = {
     val fileChoose = new FileChooser()
     Option(fileChoose.showOpenDialog(window))

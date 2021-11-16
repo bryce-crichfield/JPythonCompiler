@@ -7,6 +7,7 @@ import scalafx.beans.property.StringProperty
 object StateManager {
 
   private var currentState: State = State(CodeFile(None, None), CodeFile(None, None))
+
   def state(): State = currentState
 
   val pythonOutput = StringProperty(getPythonCodeFile().asString())
@@ -17,7 +18,6 @@ object StateManager {
     pythonOutput.update(currentState.pythonCode.asString())
   }
 
-  // TODO: Refactor the matching logic
   def setJavaCode(code: CodeFile): State = {
     currentState match {
       case s: State =>
@@ -42,7 +42,7 @@ object StateManager {
 
   def translate(input: String): (State, Option[SyntaxError]) = {
     currentState match {
-      case s: State  =>
+      case s: State =>
         val (output, syntaxErrors) = TranslationUnit.process(input)
         val rawInput = s.javaCode.setRaw(input)
         val rawOutput = s.pythonCode.setRaw(output)
