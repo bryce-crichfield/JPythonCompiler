@@ -373,16 +373,7 @@ public class ParserListener implements Java8ParserListener {
             TranslationUnit.outputNoTab("print(");
         }
             /*
-             String out = "";
 
-        if (ctx.Identifier().getText().equals("length")) {
-           out = "len(";
-        }
-        if(!NoPrintSwitch) {
-            out = ctx.getText();
-        }else {
-            NoPrintSwitch = false; //Reset flag
-        }
          if(ctx.parent.parent instanceof Java8Parser.PostIncrementExpressionContext || ctx.parent.parent instanceof Java8Parser.PostDecrementExpressionContext){
             TranslationUnit.outputWithTab(out);
         }else {
@@ -401,16 +392,20 @@ public class ParserListener implements Java8ParserListener {
             }
 
             TranslationUnit.outputNoTab(output);
-        }
-        else if(ctx.getChildCount() > 1){
+
+        }else if(ctx.getChildCount() > 1){
             out += '.';
         }
         out += ctx.Identifier().getText(); // RC removed trailing space here and individually added it to the required expressions to not effect output
         if (!(NoPrint instanceof Java8Parser.ForUpdateContext)) {
-            if (!ctx.Identifier().getText().equals("println")) { // RC 10/26
+            if (NoPrintSwitch) {
+                NoPrintSwitch = false; //Reset flag
+            }else if(ctx.parent.parent instanceof Java8Parser.PostIncrementExpressionContext || ctx.parent.parent instanceof Java8Parser.PostDecrementExpressionContext){
+                TranslationUnit.outputWithTab(out);
+            }else if (!ctx.Identifier().getText().equals("println")) { // RC 10/26
                 TranslationUnit.outputNoTab(out);
-            }
-            else TranslationUnit.outputNoTab(")"); // RC 10/26 added these statements to account for a special situation of array length access
+
+            }else TranslationUnit.outputNoTab(")"); // RC 10/26 added these statements to account for a special situation of array length access
         }
 /*
         if (TranslationUnit.show().contains("[") && !TranslationUnit.show().contains("]")) {
@@ -557,7 +552,6 @@ public class ParserListener implements Java8ParserListener {
 
         List<Java8Parser.ClassBodyDeclarationContext> classMembers = ctx.classBody().classBodyDeclaration();
         for(int i = classMembers.size() - 1; i >= 0; i--){
-        //I think conventionally, Java main method is at bottom, like C/C++
             if(classMembers.get(i).classMemberDeclaration() != null){
                 if(classMembers.get(i).classMemberDeclaration().methodDeclaration() != null){
                     Java8Parser.MethodDeclaratorContext mainMethodDeclarator = classMembers.get(i).classMemberDeclaration().methodDeclaration().methodHeader().methodDeclarator();
@@ -1592,7 +1586,6 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterStatementExpression(Java8Parser.StatementExpressionContext ctx) {
-        //System.out.println("enterStatementExpression");
     }
 
     @Override
@@ -1602,7 +1595,6 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterIfThenStatement(Java8Parser.IfThenStatementContext ctx) {
-        //System.out.println("enterIfThenStatement");
         String out = "if(";
         if(ctx.parent.parent instanceof Java8Parser.IfThenElseStatementContext || ctx.parent.parent instanceof Java8Parser.IfThenElseStatementNoShortIfContext){
             TranslationUnit.outputNoTab(out);
@@ -1614,13 +1606,11 @@ public class ParserListener implements Java8ParserListener {
     @Override
     public void exitIfThenStatement(Java8Parser.IfThenStatementContext ctx) {
         String out = "\n";
-//        String out = "";
         TranslationUnit.outputWithTab(out);
     }
 
     @Override
     public void enterIfThenElseStatement(Java8Parser.IfThenElseStatementContext ctx) {
-        //System.out.println("enterIfThenElseStatement");
         String out = "if(";
         if(ctx.parent.parent instanceof Java8Parser.IfThenElseStatementContext || ctx.parent.parent instanceof Java8Parser.IfThenElseStatementNoShortIfContext){
             TranslationUnit.outputNoTab(out);
@@ -1632,7 +1622,6 @@ public class ParserListener implements Java8ParserListener {
     @Override
     public void exitIfThenElseStatement(Java8Parser.IfThenElseStatementContext ctx) {
         String out = "\n";
-//        String out = "";
         TranslationUnit.outputWithTab(out);
     }
 
@@ -1661,7 +1650,7 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterSwitchStatement(Java8Parser.SwitchStatementContext ctx) {
-
+        NoPrintSwitch = true; //Set flag
     }
 
     @Override
@@ -1828,7 +1817,7 @@ public class ParserListener implements Java8ParserListener {
     @Override
     public void enterForUpdate(Java8Parser.ForUpdateContext ctx) {
         TranslationUnit.enterScope(); // BC: this forces the update statement to maintain tabbing as though it were a block statement
-        TranslationUnit.outputWithTab(""); // BC: this will force tabs to be inserted
+        //TranslationUnit.outputWithTab(""); // BC: this will force tabs to be inserted
     }
 
     @Override
@@ -2473,18 +2462,18 @@ public class ParserListener implements Java8ParserListener {
             switch(arrayType) {
                 case "byte":
                 case "short":
+                case "long":
                 case "int":
                     output += "[0] * ";
                     break;
                 case "boolean":
                     output += "[False] * ";
                     break;
-                case "long":
-                    output += "[0L] * ";
                 case "double":
                 case "float":
                     output += "[0.0] * ";
                     break;
+                case "String":
                 case "char":
                     output += "[''] * ";
                     break;
@@ -2891,7 +2880,7 @@ public class ParserListener implements Java8ParserListener {
     @Override
     public void exitPostIncrementExpression(Java8Parser.PostIncrementExpressionContext ctx) {
 
-        TranslationUnit.outputNoTab(" += 1");
+        TranslationUnit.outputNoTab(" += 1\n");
     }
 
     @Override
@@ -2911,7 +2900,7 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void exitPostDecrementExpression(Java8Parser.PostDecrementExpressionContext ctx) {
-        TranslationUnit.outputNoTab(" -= 1");
+        TranslationUnit.outputNoTab(" -= 1\n");
     }
 
     @Override
