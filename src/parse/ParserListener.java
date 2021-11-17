@@ -163,14 +163,18 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterClassType_lfno_classOrInterfaceType(Java8Parser.ClassType_lfno_classOrInterfaceTypeContext ctx) {
-        if (!ctx.annotation().isEmpty()){
+      /*  if (!ctx.annotation().isEmpty()){
             utilityWalker.walk(ctx.getChild(0));
         }
-        TranslationUnit.outputNoTab(ctx.Identifier().getText());
+        TranslationUnit.outputNoTab("ClassType( " + ctx.Identifier().getText());
         if (ctx.typeArguments() != null){
 
             utilityWalker.walk(ctx.getChild(ctx.getChildCount()-1));
         }
+
+       */
+
+
     }
 
     @Override
@@ -280,7 +284,6 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterTypeArguments(Java8Parser.TypeArgumentsContext ctx) {
-
     }
 
     @Override
@@ -593,12 +596,10 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterTypeParameters(Java8Parser.TypeParametersContext ctx) {
-
     }
 
     @Override
     public void exitTypeParameters(Java8Parser.TypeParametersContext ctx) {
-
     }
 
     @Override
@@ -2209,7 +2210,9 @@ public class ParserListener implements Java8ParserListener {
                 default:
                     TranslationUnit.outputNoTab(output);
                     output = "";
-                    utilityWalker.walk(ctx.getChild(i));
+                    if(!(ctx.getChild(i) instanceof Java8Parser.TypeArgumentsOrDiamondContext)) {
+                        utilityWalker.walk(ctx.getChild(i));
+                    }
             }
         } TranslationUnit.outputNoTab(output);
     } // new ForEachLoop<Character>().setStuff(letters);
@@ -2222,12 +2225,12 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterTypeArgumentsOrDiamond(Java8Parser.TypeArgumentsOrDiamondContext ctx) {
-        TranslationUnit.outputNoTab("<");
+        //TranslationUnit.outputNoTab("<");
     }
 
     @Override
     public void exitTypeArgumentsOrDiamond(Java8Parser.TypeArgumentsOrDiamondContext ctx) {
-        TranslationUnit.outputNoTab(">");
+        //TranslationUnit.outputNoTab(">");
     }
 
     @Override
