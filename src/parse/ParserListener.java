@@ -2666,7 +2666,16 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterConditionalExpression(Java8Parser.ConditionalExpressionContext ctx) {
-
+        if (!(ctx.getChildCount() > 1)){
+            utilityWalker.walk(ctx.getChild(0));
+        }
+        else {
+            utilityWalker.walk(ctx.getChild(2));
+            TranslationUnit.outputNoTab(" if(");
+            utilityWalker.walk(ctx.getChild(0));
+            TranslationUnit.outputNoTab(") else ");
+            utilityWalker.walk(ctx.getChild(ctx.getChildCount()-1));
+        }
     }
 
     @Override

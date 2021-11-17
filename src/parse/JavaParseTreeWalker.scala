@@ -49,7 +49,7 @@ class JavaParseTreeWalker(private val listener: ParserListener) {
           doClassDeclarationWalk
         case _ @ (_: MethodInvocationContext | _: MethodInvocation_lfno_primaryContext | _: ClassInstanceCreationExpressionContext
           | _: ClassInstanceCreationExpression_lf_primaryContext | _: ClassInstanceCreationExpression_lfno_primaryContext
-          | _: ClassTypeContext | _: ClassType_lf_classOrInterfaceTypeContext | _: ClassType_lfno_classOrInterfaceTypeContext) =>
+          | _: ConditionalExpressionContext) =>
           doNoWalk
         case _ =>
           doDefaultWalk
