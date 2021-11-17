@@ -20,6 +20,7 @@ public class ParserListener implements Java8ParserListener {
     private Java8Parser parser;
     private Stack<Java8Parser.ForUpdateContext> forUpdates = new Stack<>();
     private boolean NoPrintSwitch = false;
+    private boolean NoPrintReturn = false;
     private RuleContext NoPrint;// RC: Used to store the parent rule context of a branch you don't want to print
     private String arrayType; // RC: Used to store the type of an array for the arrayCreationExpression rule
     private int arrayDimIndex = -1;
@@ -163,18 +164,16 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterClassType_lfno_classOrInterfaceType(Java8Parser.ClassType_lfno_classOrInterfaceTypeContext ctx) {
-      /*  if (!ctx.annotation().isEmpty()){
+        /*
+        if (!ctx.annotation().isEmpty()){
             utilityWalker.walk(ctx.getChild(0));
         }
-        TranslationUnit.outputNoTab("ClassType( " + ctx.Identifier().getText());
+        TranslationUnit.outputNoTab(ctx.Identifier().getText());
         if (ctx.typeArguments() != null){
 
             utilityWalker.walk(ctx.getChild(ctx.getChildCount()-1));
         }
-
-       */
-
-
+        */
     }
 
     @Override
@@ -1890,6 +1889,7 @@ public class ParserListener implements Java8ParserListener {
         if(ctx.expression().getText().equals("this")){
             out = out + "self";
         }
+        NoPrintReturn = true;
         TranslationUnit.outputWithTab(out);
     }
 
@@ -2095,7 +2095,10 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterPrimaryNoNewArray_lfno_primary(Java8Parser.PrimaryNoNewArray_lfno_primaryContext ctx) {
-
+        if ( !NoPrintReturn && ctx.getChildCount() == 1 && ctx.getChild(0).getText().equals("this")){
+            TranslationUnit.outputNoTab("self");
+            NoPrintReturn = false;
+        }
     }
 
     @Override
@@ -2235,6 +2238,18 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterFieldAccess(Java8Parser.FieldAccessContext ctx) {
+        String out = "";
+        for(int i = 0 ; i < ctx.getChildCount(); i++){
+            switch (ctx.getChild(i).getText()){
+                case "super":
+                    out += "super";
+                case ".":
+                    out += "." + ctx.Identifier().getText();
+                default:
+                    utilityWalker.walk(ctx.getChild(i));
+            }
+        }
+        TranslationUnit.outputNoTab(out);
     }
 
     @Override
