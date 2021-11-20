@@ -2035,12 +2035,20 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterPrimaryNoNewArray(Java8Parser.PrimaryNoNewArrayContext ctx) {
-
+        String out = "";
+        if(ctx.getChildCount() == 3 || ctx.getChild(1) instanceof  Java8Parser.ExpressionContext){
+            out = "(";
+        }
+        TranslationUnit.outputNoTab(out);
     }
 
     @Override
     public void exitPrimaryNoNewArray(Java8Parser.PrimaryNoNewArrayContext ctx) {
-
+        String out = "";
+        if(ctx.getChildCount() == 3 || ctx.getChild(1) instanceof  Java8Parser.ExpressionContext){
+            out = ")";
+        }
+        TranslationUnit.outputNoTab(out);
     }
 
     @Override
@@ -2055,12 +2063,20 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterPrimaryNoNewArray_lfno_arrayAccess(Java8Parser.PrimaryNoNewArray_lfno_arrayAccessContext ctx) {
-
+        String out = "";
+        if(ctx.getChildCount() == 3 || ctx.getChild(1) instanceof  Java8Parser.ExpressionContext){
+            out = "(";
+        }
+        TranslationUnit.outputNoTab(out);
     }
 
     @Override
     public void exitPrimaryNoNewArray_lfno_arrayAccess(Java8Parser.PrimaryNoNewArray_lfno_arrayAccessContext ctx) {
-
+        String out = "";
+        if(ctx.getChildCount() == 3 || ctx.getChild(1) instanceof  Java8Parser.ExpressionContext){
+            out = ")";
+        }
+        TranslationUnit.outputNoTab(out);
     }
 
     @Override
@@ -2095,15 +2111,23 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterPrimaryNoNewArray_lfno_primary(Java8Parser.PrimaryNoNewArray_lfno_primaryContext ctx) {
+        String out = "";
         if ( !NoPrintReturn && ctx.getChildCount() == 1 && ctx.getChild(0).getText().equals("this")){
-            TranslationUnit.outputNoTab("self");
+            out = "self";
             NoPrintReturn = false;
+        }else if(ctx.getChildCount() == 3 || ctx.getChild(1) instanceof  Java8Parser.ExpressionContext){
+            out = "(";
         }
+        TranslationUnit.outputNoTab(out);
     }
 
     @Override
     public void exitPrimaryNoNewArray_lfno_primary(Java8Parser.PrimaryNoNewArray_lfno_primaryContext ctx) {
-
+        String out = "";
+        if(ctx.getChildCount() == 3 || ctx.getChild(1) instanceof  Java8Parser.ExpressionContext){
+            out = ")";
+        }
+        TranslationUnit.outputNoTab(out);
     }
 
     @Override
@@ -2118,12 +2142,20 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterPrimaryNoNewArray_lfno_primary_lfno_arrayAccess_lfno_primary(Java8Parser.PrimaryNoNewArray_lfno_primary_lfno_arrayAccess_lfno_primaryContext ctx) {
-
+        String out = "";
+        if(ctx.getChildCount() == 3 || ctx.getChild(1) instanceof  Java8Parser.ExpressionContext){
+            out = "(";
+        }
+        TranslationUnit.outputNoTab(out);
     }
 
     @Override
     public void exitPrimaryNoNewArray_lfno_primary_lfno_arrayAccess_lfno_primary(Java8Parser.PrimaryNoNewArray_lfno_primary_lfno_arrayAccess_lfno_primaryContext ctx) {
-
+        String out = "";
+        if(ctx.getChildCount() == 3 || ctx.getChild(1) instanceof  Java8Parser.ExpressionContext){
+            out = ")";
+        }
+        TranslationUnit.outputNoTab(out);
     }
 
     @Override
