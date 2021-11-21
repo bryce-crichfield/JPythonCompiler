@@ -1838,7 +1838,28 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterEnhancedForStatement(Java8Parser.EnhancedForStatementContext ctx) {
-
+        for(int i = 0; i < ctx.getChildCount(); i++){
+            switch (ctx.getChild(i).getText()) {
+                case "for":
+                    TranslationUnit.outputWithTab(ctx.getChild(i).getText() + " ");
+                    break;
+                case "(":
+                case ")":
+                    break;
+                case ":":
+                    TranslationUnit.outputNoTab(ctx.variableDeclaratorId().getText() + " in ");
+                    break;
+                default:
+                    if (!(ctx.getChild(i) instanceof Java8Parser.VariableModifierContext) ||
+                            !(ctx.getChild(i) instanceof Java8Parser.UnannTypeContext)) {
+                        if (ctx.getChild(i) instanceof Java8Parser.StatementContext)
+                        {
+                            TranslationUnit.outputNoTab(":\n");
+                        }
+                        utilityWalker.walk(ctx.getChild(i));
+                    }
+            }
+        }
     }
 
     @Override
