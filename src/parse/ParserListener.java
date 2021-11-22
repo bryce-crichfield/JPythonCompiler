@@ -347,7 +347,7 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void exitTypeName(Java8Parser.TypeNameContext ctx) {
-        if(ctx.parent instanceof Java8Parser.MethodInvocationContext){
+        if(ctx.parent instanceof Java8Parser.MethodInvocationContext && !(ctx.getText().equals("System.out"))){
             String output = ctx.Identifier().getText();
           /*  if (!(ctx.parent.getChild(2) instanceof Java8Parser.TypeArgumentsContext)){
                 output += '.';
@@ -420,7 +420,6 @@ public class ParserListener implements Java8ParserListener {
     @Override
     public void enterMethodName(Java8Parser.MethodNameContext ctx) {
             TranslationUnit.outputNoTab(ctx.Identifier().getText());
-
     }
 
     @Override
@@ -2362,24 +2361,31 @@ public class ParserListener implements Java8ParserListener {
         ArrayList<RuleContext> children = getChildrenContexts(ctx);
         TranslationUnit.outputWithTab("");
         String output = "";
-        for (int i = 0; i < ctx.getChildCount(); i++){
-            switch(ctx.getChild(i).getText()) {
-                case "super":
-                    output += "super";
-                    break;
-                case ".":
-                      output += ".";
-                    break;
-                case "(":
-                    if(ctx.Identifier() != null){
-                        output += ctx.Identifier().getText();
-                        TranslationUnit.outputNoTab(output);
-                    }
-                default:
-                    utilityWalker.walk(ctx.getChild(i));
+
+        if(ctx.getChild(0).getText().equals("System.out") && ctx.getChild(2).getText().equals("println")) {
+            output = "print";
+            TranslationUnit.outputNoTab(output);
+            utilityWalker.walk(ctx.getChild(ctx.getChildCount() - 2));
+        }else {
+            for (int i = 0; i < ctx.getChildCount(); i++) {
+                switch (ctx.getChild(i).getText()) {
+                    case "super":
+                        output += "super";
+                        break;
+                    case ".":
+                        output += ".";
+                        break;
+                    case "(":
+                        if (ctx.Identifier() != null) {
+                            output += ctx.Identifier().getText();
+                            TranslationUnit.outputNoTab(output);
+                        }
+                        break;
+                    default:
+                        utilityWalker.walk(ctx.getChild(i));
+                }
             }
         }
-
     }
 
     @Override
@@ -2391,6 +2397,8 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterMethodInvocation_lf_primary(Java8Parser.MethodInvocation_lf_primaryContext ctx) {
+        //System.out.println(ctx.getText() + "\t" + ctx.getClass().getName());
+
         TranslationUnit.outputNoTab(".");
         if (ctx.typeArguments() == null){
             TranslationUnit.outputNoTab(ctx.Identifier().getText());
@@ -2405,6 +2413,8 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterMethodInvocation_lfno_primary(Java8Parser.MethodInvocation_lfno_primaryContext ctx) {
+        //System.out.println(ctx.getText() + "\t" + ctx.getClass().getName());
+
         String output = "";
         for (int i = 0; i < ctx.getChildCount(); i++){
             switch(ctx.getChild(i).getText()) {
