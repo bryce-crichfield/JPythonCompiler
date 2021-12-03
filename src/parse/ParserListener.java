@@ -2561,7 +2561,7 @@ public class ParserListener implements Java8ParserListener {
                 default:
                     output += "[] * ";
             }
-            output += second;
+            output += second; // RC 12/3 removed double print
             if(i != first-1)
                 output += ", ";
         }
@@ -2579,7 +2579,6 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterDimExpr(Java8Parser.DimExprContext ctx) {
-        String output = "";
         /*
         NoPrint = ctx;
 
@@ -2884,7 +2883,7 @@ public class ParserListener implements Java8ParserListener {
     @Override
     public void exitAdditiveExpression(Java8Parser.AdditiveExpressionContext ctx) {
         if(ctx.parent instanceof Java8Parser.AdditiveExpressionContext){//ctx.parent.getChildCount() > 1){
-            TranslationUnit.outputNoTab(" " +ctx.parent.getChild(1).getText() + " ");
+            TranslationUnit.outputNoTab(" " + "," + " ");
         }
     }
 
