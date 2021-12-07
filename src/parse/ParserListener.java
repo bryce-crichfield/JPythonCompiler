@@ -21,6 +21,7 @@ public class ParserListener implements Java8ParserListener {
     private Stack<Java8Parser.ForUpdateContext> forUpdates = new Stack<>();
     private boolean NoPrintSwitch = false;
     private boolean NoPrintReturn = false;
+    private boolean isStringConcat = false;
     private RuleContext NoPrint;// RC: Used to store the parent rule context of a branch you don't want to print
     private String arrayType; // RC: Used to store the type of an array for the arrayCreationExpression rule
     private int arrayDimIndex = -1;
@@ -55,19 +56,17 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterLiteral(Java8Parser.LiteralContext ctx) {
-        //if(!(NoPrint instanceof Java8Parser.DimExprContext)) {
-            String out = ctx.getText();
-            if (out.equals("true")) {
-                out = "True";
-            } else if (out.equals("false")) {
-                out = "False";
-            }
-            if ((ctx.IntegerLiteral() != null || ctx.FloatingPointLiteral() != null) && ctx.getText().charAt(ctx.getText().length() - 1) > 57) {
-                out = out.substring(0, ctx.getText().length() - 1);
-            }
-
-            TranslationUnit.outputNoTab(out);
-        //}
+        String out = ctx.getText();
+        if (out.equals("true")) {
+            out = "True";
+        } else if (out.equals("false")) {
+            out = "False";
+        }
+        if ((ctx.IntegerLiteral() != null || ctx.FloatingPointLiteral() != null) && ctx.getText().charAt(ctx.getText().length() - 1) > 57) {
+            out = out.substring(0, ctx.getText().length() - 1);
+        }
+        if(ctx.getText().equals("null")) {out = "";}
+        TranslationUnit.outputNoTab(out);
     }
 
     @Override
@@ -87,7 +86,7 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterNumericType(Java8Parser.NumericTypeContext ctx) {
-  
+
     }
 
     @Override
@@ -703,7 +702,7 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void enterVariableDeclarator(Java8Parser.VariableDeclaratorContext ctx) {
-        String optionalInitializer = ctx.variableInitializer() == null ? "None" : "";//ctx.variableInitializer().getText();
+        String optionalInitializer = (ctx.variableInitializer() == null || ctx.variableInitializer().getText().equals("null")) ? "None" : "";
         String out = ctx.variableDeclaratorId().Identifier() + " " + "=" + " " + optionalInitializer; // expression
         TranslationUnit.outputWithTab(out);
     }
@@ -2365,7 +2364,9 @@ public class ParserListener implements Java8ParserListener {
         if(ctx.getChild(0).getText().equals("System.out") && ctx.getChild(2).getText().equals("println")) {
             output = "print";
             TranslationUnit.outputNoTab(output);
+            isStringConcat = true;
             utilityWalker.walk(ctx.getChild(ctx.getChildCount() - 2));
+            isStringConcat = false;
         }else {
             for (int i = 0; i < ctx.getChildCount(); i++) {
                 switch (ctx.getChild(i).getText()) {
@@ -2883,8 +2884,10 @@ public class ParserListener implements Java8ParserListener {
 
     @Override
     public void exitAdditiveExpression(Java8Parser.AdditiveExpressionContext ctx) {
-        if(ctx.parent instanceof Java8Parser.AdditiveExpressionContext){//ctx.parent.getChildCount() > 1){
-            TranslationUnit.outputNoTab(" " + "," + " ");
+        if(ctx.parent instanceof Java8Parser.AdditiveExpressionContext){
+            if(isStringConcat) {
+                TranslationUnit.outputNoTab(" " + "," + " ");
+            }else {TranslationUnit.outputNoTab(" " + ctx.parent.getChild(1).getText() + " ");}
         }
     }
 
